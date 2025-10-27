@@ -2,10 +2,18 @@
 - name: "Step 2: Deploy Elasticsearch"
   hosts: all
   become: yes
-  tags:
-    - elasticsearch
-    - elk
-
+  
+  vars:
+    # Elasticsearch variables
+    base_directory: "/opt/network-sensors"
+    cert_directory: "{{ base_directory }}/certificates"
+    elasticsearch_version: "9.0.0"
+    elasticsearch_http_port: 9200
+    elasticsearch_transport_port: 9300
+    elasticsearch_heap_size: "4g"
+    elasticsearch_password: "ChangeMe123!"
+    elasticsearch_data_path: "/data1/elasticsearch"
+  
   tasks:
     - name: Display Elasticsearch deployment phase
       debug:
@@ -17,11 +25,12 @@
           - "HTTP Port: {{ elasticsearch_http_port }}"
           - "Heap Size: {{ elasticsearch_heap_size }}"
           - "Data Path: {{ elasticsearch_data_path }}"
+          - "SSL/TLS: Enabled"
           - "=========================================="
       tags: ['always']
 
     - name: Include elasticsearch role
-      include_role:
+      import_role:
         name: elasticsearch
       tags: ['es']
 
@@ -45,5 +54,8 @@
           - "Username: elastic"
           - "Password: {{ elasticsearch_password }}"
           - "Docker Compose: {{ base_directory }}/elasticsearch/docker-compose.yml"
+          - ""
+          - "Test connection:"
+          - "  curl -k -u elastic:{{ elasticsearch_password }} https://localhost:{{ elasticsearch_http_port }}"
           - "=========================================="
       tags: ['always']
