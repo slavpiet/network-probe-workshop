@@ -17,7 +17,8 @@
 @load frameworks/files/extract-all-files
 
 # Load JA4+ fingerprinting
-@load ja4
+# Installed via zkg - should auto-load
+@load packages/ja4
 
 # Network configuration
 redef Site::local_nets += {
@@ -31,10 +32,3 @@ redef LogAscii::use_json = T;
 
 # Configure extraction limits
 redef FileExtract::extraction_limit = 10MB;
-
-# JA4+ configuration
-# JA4+ will automatically log fingerprints in:
-# - ja4.log (JA4 TLS client fingerprints)
-# - ja4s.log (JA4S TLS server fingerprints) 
-# - ja4h.log (JA4H HTTP client fingerprints)
-# - ja4ssh.log (JA4SSH SSH fingerprints)
