@@ -1,0 +1,17 @@
+---
+- name: Stop Suricata
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/suricata"
+    state: absent
+  tags: ['rollback']
+
+- name: Remove Suricata directory
+  file:
+    path: "{{ base_directory }}/suricata"
+    state: absent
+  tags: ['rollback']
+
+- name: Logs preserved
+  debug:
+    msg: "Suricata removed. Logs preserved at {{ suricata_log_path }}"
+  tags: ['rollback']
