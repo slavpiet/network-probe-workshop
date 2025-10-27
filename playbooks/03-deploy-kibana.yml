@@ -1,0 +1,47 @@
+---
+- name: "Step 3: Deploy Kibana"
+  hosts: all
+  become: yes
+  tags:
+    - kibana
+    - elk
+
+  tasks:
+    - name: Display Kibana deployment phase
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 3: KIBANA DEPLOYMENT"
+          - "=========================================="
+          - "Version: {{ kibana_version }}"
+          - "Port: {{ kibana_port }}"
+          - "Connecting to Elasticsearch: {{ elasticsearch_ip }}"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Include kibana role
+      include_role:
+        name: kibana
+      tags: ['kb']
+
+    - name: Wait for Kibana to be ready
+      wait_for:
+        host: localhost
+        port: "{{ kibana_port }}"
+        delay: 15
+        timeout: 300
+        msg: "Kibana did not start in time"
+      tags: ['kb', 'verify']
+
+    - name: Display Kibana access information
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 3: COMPLETED"
+          - "=========================================="
+          - "Kibana is running!"
+          - "URL: http://localhost:{{ kibana_port }}"
+          - "Login with Elasticsearch credentials"
+          - "Docker Compose: {{ base_directory }}/kibana/docker-compose.yml"
+          - "=========================================="
+      tags: ['always']
