@@ -1,0 +1,200 @@
+---
+- name: "STORAGE TASK 1: Display disk configuration plan"
+  debug:
+    msg:
+      - "=========================================="
+      - "DISK CONFIGURATION PLAN"
+      - "=========================================="
+      - "{{ disk_data1_device }} → {{ disk_data1_mount }} (Elasticsearch)"
+      - "{{ disk_data3_device }} → {{ disk_data3_mount }} (Arkime PCAPs)"
+      - "LVM Extension → {{ disk_data2_mount }} (Logs)"
+      - "=========================================="
+      - "WARNING: This will ERASE existing data!"
+      - "=========================================="
+  tags: ['storage']
+
+- name: Pause before disk operations
+  pause:
+    prompt: "About to configure disks. Press ENTER to continue or Ctrl+C to abort"
+  tags: ['storage']
+
+# Configure /data1 (Elasticsearch) on /dev/sdb
+- name: "STORAGE TASK 2: Check if {{ disk_data1_device }} is already mounted"
+  command: mountpoint -q {{ disk_data1_mount }}
+  register: data1_mounted
+  failed_when: false
+  changed_when: false
+  tags: ['storage']
+
+- name: "STORAGE TASK 3: Create partition on {{ disk_data1_device }}"
+  parted:
+    device: "{{ disk_data1_device }}"
+    number: 1
+    state: present
+    part_start: "0%"
+    part_end: "100%"
+  when: data1_mounted.rc != 0
+  tags: ['storage']
+
+- name: "STORAGE TASK 4: Create {{ filesystem_type }} filesystem on {{ disk_data1_device }}1"
+  filesystem:
+    fstype: "{{ filesystem_type }}"
+    dev: "{{ disk_data1_device }}1"
+    force: no
+  when: data1_mounted.rc != 0
+  tags: ['storage']
+
+- name: "STORAGE TASK 5: Create {{ disk_data1_mount }} directory"
+  file:
+    path: "{{ disk_data1_mount }}"
+    state: directory
+    mode: '0755'
+  tags: ['storage']
+
+- name: "STORAGE TASK 6: Mount {{ disk_data1_device }}1 to {{ disk_data1_mount }}"
+  mount:
+    path: "{{ disk_data1_mount }}"
+    src: "{{ disk_data1_device }}1"
+    fstype: "{{ filesystem_type }}"
+    state: mounted
+    opts: defaults
+  tags: ['storage']
+
+- name: Display data1 mount status
+  debug:
+    msg: "{{ disk_data1_mount }} mounted successfully for Elasticsearch"
+  tags: ['storage']
+
+# Configure /data3 (Arkime PCAPs) on /dev/sda
+- name: "STORAGE TASK 7: Check if {{ disk_data3_device }} is already mounted"
+  command: mountpoint -q {{ disk_data3_mount }}
+  register: data3_mounted
+  failed_when: false
+  changed_when: false
+  tags: ['storage']
+
+- name: "STORAGE TASK 8: Create partition on {{ disk_data3_device }}"
+  parted:
+    device: "{{ disk_data3_device }}"
+    number: 1
+    state: present
+    part_start: "0%"
+    part_end: "100%"
+  when: data3_mounted.rc != 0
+  tags: ['storage']
+
+- name: "STORAGE TASK 9: Create {{ filesystem_type }} filesystem on {{ disk_data3_device }}1"
+  filesystem:
+    fstype: "{{ filesystem_type }}"
+    dev: "{{ disk_data3_device }}1"
+    force: no
+  when: data3_mounted.rc != 0
+  tags: ['storage']
+
+- name: "STORAGE TASK 10: Create {{ disk_data3_mount }} directory"
+  file:
+    path: "{{ disk_data3_mount }}"
+    state: directory
+    mode: '0755'
+  tags: ['storage']
+
+- name: "STORAGE TASK 11: Mount {{ disk_data3_device }}1 to {{ disk_data3_mount }}"
+  mount:
+    path: "{{ disk_data3_mount }}"
+    src: "{{ disk_data3_device }}1"
+    fstype: "{{ filesystem_type }}"
+    state: mounted
+    opts: defaults
+  tags: ['storage']
+
+- name: Display data3 mount status
+  debug:
+    msg: "{{ disk_data3_mount }} mounted successfully for Arkime PCAPs"
+  tags: ['storage']
+
+# Configure /data2 (Logs) using LVM extension
+- name: "STORAGE TASK 12: Check if {{ disk_data2_mount }} is already mounted"
+  command: mountpoint -q {{ disk_data2_mount }}
+  register: data2_mounted
+  failed_when: false
+  changed_when: false
+  tags: ['storage']
+
+- name: "STORAGE TASK 13: Extend LVM Physical Volume on /dev/sdc3"
+  command: pvresize /dev/sdc3
+  when: data2_mounted.rc != 0
+  tags: ['storage']
+
+- name: "STORAGE TASK 14: Get available space in volume group"
+  command: vgs {{ disk_data2_vg }} --noheadings --units g -o vg_free
+  register: vg_free_space
+  changed_when: false
+  when: data2_mounted.rc != 0
+  tags: ['storage']
+
+- name: Display available VG space
+  debug:
+    msg: "Available space in {{ disk_data2_vg }}: {{ vg_free_space.stdout | trim }}"
+  when: data2_mounted.rc != 0
+  tags: ['storage']
+
+- name: "STORAGE TASK 15: Create logical volume for {{ disk_data2_mount }}"
+  lvol:
+    vg: "{{ disk_data2_vg }}"
+    lv: "{{ disk_data2_lv_name }}"
+    size: "100%FREE"
+    state: present
+  when: data2_mounted.rc != 0
+  tags: ['storage']
+
+- name: "STORAGE TASK 16: Create {{ filesystem_type }} filesystem on LV"
+  filesystem:
+    fstype: "{{ filesystem_type }}"
+    dev: "/dev/{{ disk_data2_vg }}/{{ disk_data2_lv_name }}"
+  when: data2_mounted.rc != 0
+  tags: ['storage']
+
+- name: "STORAGE TASK 17: Create {{ disk_data2_mount }} directory"
+  file:
+    path: "{{ disk_data2_mount }}"
+    state: directory
+    mode: '0755'
+  tags: ['storage']
+
+- name: "STORAGE TASK 18: Mount LV to {{ disk_data2_mount }}"
+  mount:
+    path: "{{ disk_data2_mount }}"
+    src: "/dev/{{ disk_data2_vg }}/{{ disk_data2_lv_name }}"
+    fstype: "{{ filesystem_type }}"
+    state: mounted
+    opts: defaults
+  tags: ['storage']
+
+- name: Display data2 mount status
+  debug:
+    msg: "{{ disk_data2_mount }} mounted successfully for Logs"
+  tags: ['storage']
+
+- name: "STORAGE TASK 19: Verify all mounts"
+  command: df -h
+  register: df_output
+  changed_when: false
+  tags: ['storage', 'verify']
+
+- name: Display filesystem summary
+  debug:
+    msg: "{{ df_output.stdout_lines }}"
+  tags: ['storage', 'verify']
+
+- name: "STORAGE TASK 20: Set correct permissions on mount points"
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop:
+    - "{{ disk_data1_mount }}"
+    - "{{ disk_data2_mount }}"
+    - "{{ disk_data3_mount }}"
+  tags: ['storage']
