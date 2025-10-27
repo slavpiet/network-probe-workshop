@@ -1,25 +1,31 @@
 ---
-- name: "Step 6: Deploy Zeek Network Security Monitor"
+- name: "Step 7: Deploy Zeek Network Security Monitor"
   hosts: all
   become: yes
-  tags:
-    - zeek
-    - nsm
-
+  
+  vars:
+    # Zeek variables
+    base_directory: "/opt/network-sensors"
+    logs_directory: "/data2/logs"
+    zeek_log_path: "{{ logs_directory }}/zeek"
+    zeek_version: "8.0.1"
+    capture_interface: "eno4"
+  
   tasks:
     - name: Display Zeek deployment phase
       debug:
         msg:
           - "=========================================="
-          - "PHASE 6: ZEEK DEPLOYMENT"
+          - "PHASE 7: ZEEK DEPLOYMENT"
           - "=========================================="
           - "Version: {{ zeek_version }}"
           - "Capture Interface: {{ capture_interface }}"
+          - "Logs Directory: {{ zeek_log_path }}"
           - "=========================================="
       tags: ['always']
 
     - name: Include zeek role
-      include_role:
+      import_role:
         name: zeek
       tags: ['zk']
 
@@ -27,11 +33,15 @@
       debug:
         msg:
           - "=========================================="
-          - "PHASE 6: COMPLETED"
+          - "PHASE 7: COMPLETED"
           - "=========================================="
           - "Zeek is running!"
           - "Monitoring interface: {{ capture_interface }}"
-          - "Logs: {{ logs_directory }}/zeek/"
+          - "Logs: {{ zeek_log_path }}/current/"
           - "Docker Compose: {{ base_directory }}/zeek/docker-compose.yml"
+          - ""
+          - "View logs:"
+          - "  docker logs -f zeek"
+          - "  tail -f {{ zeek_log_path }}/current/conn.log"
           - "=========================================="
       tags: ['always']
