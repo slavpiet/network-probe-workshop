@@ -1,12 +1,7 @@
 ---
-# defaults for arkime role
 arkime_version: "{{ arkime_version | default('v5.7.1') }}"
 arkime_port: "{{ arkime_port | default(8005) }}"
 arkime_password: "{{ arkime_password | default('ChangeMe123!') }}"
 arkime_pcap_path: "{{ arkime_pcap_path | default('/data3/pcap') }}"
-arkime_hostname: "arkime"
-arkime_elasticsearch_url: "https://localhost:9200"
-arkime_elastic_user: "elastic"
-arkime_elastic_password: "{{ elasticsearch_password | default('ChangeMe123!') }}"
-arkime_ca_cert_src: "{{ cert_directory }}/ca.crt"
-arkime_config_dir: "{{ base_directory }}/arkime/config"
+arkime_elasticsearch_url: "{{ arkime_elasticsearch_url | default('https://localhost:9200') }}"
+arkime_auto_create_admin: true
