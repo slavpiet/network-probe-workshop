@@ -6,13 +6,12 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
-    environment:
-      - ZEEK_INTERFACE={{ capture_interface }}
     entrypoint: /opt/zeek-entrypoint.sh
     volumes:
       - {{ zeek_log_path }}:/usr/local/zeek/logs
       - {{ base_directory }}/zeek/scripts/local.zeek:/usr/local/zeek/share/zeek/site/local.zeek:ro
       - {{ base_directory }}/zeek/zeekctl.cfg:/usr/local/zeek/etc/zeekctl.cfg:ro
+      - {{ base_directory }}/zeek/node.cfg:/usr/local/zeek/etc/node.cfg:ro
       - {{ base_directory }}/zeek/packages:/usr/local/zeek/share/zeek/site/packages
       - {{ base_directory }}/zeek/zeek-entrypoint.sh:/opt/zeek-entrypoint.sh:ro
     restart: unless-stopped
