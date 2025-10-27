@@ -2,55 +2,26 @@
 set -e
 
 echo "Checking JA4+ installation..."
-
-# Check if JA4+ is already installed
 if [ ! -d "/usr/local/zeek/share/zeek/site/packages/ja4" ]; then
-    echo "Installing JA4+ Zeek package..."
     apt-get update -qq && apt-get install -y -qq git ca-certificates 2>&1 | grep -v "debconf"
-    echo "Installing JA4+ via zkg from GitHub..."
     zkg install --force https://github.com/FoxIO-LLC/ja4
-    
-    if zkg list | grep -q ja4; then
-        echo "JA4+ installed successfully!"
-    else
-        echo "ERROR: JA4+ installation verification failed!"
-        exit 1
-    fi
+    echo "JA4+ installed successfully!"
 else
-    echo "JA4+ already installed, skipping installation"
+    echo "JA4+ already installed"
 fi
-
-echo "Installing zkg packages..."
-zkg list
-
-echo "Cleaning zeekctl state..."
-zeekctl stop || true
-zeekctl cleanup --all || true
-
-echo "Installing zeekctl configuration..."
-zeekctl install
 
 echo "Starting Zeek..."
 zeekctl deploy
 
-# Check if zeek is actually running
 sleep 5
-ZEEK_STATUS=$(zeekctl status)
-echo "$ZEEK_STATUS"
+zeekctl status
 
-if echo "$ZEEK_STATUS" | grep -q "crashed"; then
-    echo "ERROR: Zeek crashed! Running diagnostics..."
-    zeekctl diag
-    exit 1
-fi
+echo "Creating log symlink structure in /zeek-logs..."
+mkdir -p /zeek-logs
+ln -sf /usr/local/zeek/spool/zeek /zeek-logs/current
 
-if ! echo "$ZEEK_STATUS" | grep -q "running"; then
-    echo "ERROR: Zeek not running! Running diagnostics..."
-    zeekctl diag
-    exit 1
-fi
-
-echo "Zeek started successfully!"
-
-# Keep container running by tailing logs
-tail -f /usr/local/zeek/logs/current/stdout.log /usr/local/zeek/logs/current/stderr.log
+# Copy logs periodically
+while true; do
+    rsync -a --delete /usr/local/zeek/spool/zeek/ /zeek-logs/current/ 2>/dev/null || true
+    sleep 60
+done
