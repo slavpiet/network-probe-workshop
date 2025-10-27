@@ -1,7 +1,6 @@
 %YAML 1.1
 ---
 # Suricata configuration
-
 vars:
   address-groups:
     HOME_NET: "[{{ suricata_home_net }}]"
@@ -35,16 +34,84 @@ vars:
 
 # Application layer protocols
 app-layer:
+  error-policy: pass-flow
   protocols:
-    dnp3:
+    rfb:
       enabled: yes
-      detection-enabled: yes
+      detection-ports:
+        dp: 5900, 5901, 5902, 5903, 5904, 5905, 5906, 5907, 5908, 5909
+    mqtt:
+      enabled: yes
+    krb5:
+      enabled: yes
+    snmp:
+      enabled: yes
+    ikev2:
+      enabled: yes
+    tls:
+      enabled: yes
+      detection-ports:
+        dp: 443
+    dcerpc:
+      enabled: yes
+    ftp:
+      enabled: yes
+      memcap: 64mb
+    ftp-data:
+      enabled: yes
+    ssh:
+      enabled: yes
+    http2:
+      enabled: yes
+    smtp:
+      enabled: yes
+      raw-extraction: no
+      mime:
+        decode-mime: yes
+        decode-base64: yes
+        decode-quoted-printable: yes
+        header-value-depth: 2000
+        extract-urls: yes
+        body-md5: no
+      inspected-tracker:
+        content-limit: 100000
+        content-inspect-min-size: 32768
+        content-inspect-window: 4096
+    imap:
+      enabled: detection-only
+    smb:
+      enabled: yes
+      detection-ports:
+        dp: 139, 445
+    nfs:
+      enabled: yes
+    tftp:
+      enabled: yes
+    dns:
+      enabled: yes
+    http:
+      enabled: yes
+      memcap: 64mb
     modbus:
       enabled: yes
-      detection-enabled: yes
+      detection-ports:
+        dp: 502
+      stream-depth: 0
+    dnp3:
+      enabled: yes
+      detection-ports:
+        dp: 20000
     enip:
       enabled: yes
-      detection-enabled: yes
+      detection-ports:
+        dp: 44818
+        sp: 44818
+    ntp:
+      enabled: yes
+    dhcp:
+      enabled: yes
+    sip:
+      enabled: yes
 
 # Logging
 outputs:
@@ -58,6 +125,8 @@ outputs:
       types:
         - alert:
             tagged-packets: yes
+        - anomaly:
+            enabled: yes
         - http:
             extended: yes
         - dns:
@@ -72,6 +141,8 @@ outputs:
         - stats:
             totals: yes
             threads: yes
+        - dnp3:
+        - modbus:
 
 # AF_PACKET capture
 af-packet:
