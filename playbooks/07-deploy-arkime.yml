@@ -1,0 +1,48 @@
+---
+- name: "Step 7: Deploy Arkime Packet Capture"
+  hosts: all
+  become: yes
+  tags:
+    - arkime
+    - pcap
+
+  tasks:
+    - name: Display Arkime deployment phase
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 7: ARKIME DEPLOYMENT"
+          - "=========================================="
+          - "Version: {{ arkime_version }}"
+          - "Web Port: {{ arkime_port }}"
+          - "Capture Interface: {{ capture_interface }}"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Include arkime role
+      include_role:
+        name: arkime
+      tags: ['ark']
+
+    - name: Wait for Arkime to be ready
+      wait_for:
+        host: localhost
+        port: "{{ arkime_port }}"
+        delay: 10
+        timeout: 300
+        msg: "Arkime did not start in time"
+      tags: ['ark', 'verify']
+
+    - name: Display Arkime access information
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 7: COMPLETED"
+          - "=========================================="
+          - "Arkime is running!"
+          - "URL: http://localhost:{{ arkime_port }}"
+          - "Username: admin"
+          - "Password: {{ arkime_password }}"
+          - "Docker Compose: {{ base_directory }}/arkime/docker-compose.yml"
+          - "=========================================="
+      tags: ['always']
