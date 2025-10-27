@@ -1,0 +1,23 @@
+---
+- name: "Rollback: System Preparation"
+  hosts: all
+  become: yes
+  tags:
+    - rollback
+
+  tasks:
+    - name: Display rollback information
+      debug:
+        msg:
+          - "=========================================="
+          - "ROLLBACK: SYSTEM PREPARATION"
+          - "=========================================="
+          - "This will reverse all changes from 00-prepare-system.yml"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Execute rollback tasks
+      include_role:
+        name: common
+        tasks_from: rollback
+      tags: ['rollback']
