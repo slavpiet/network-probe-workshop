@@ -1,3 +1,4 @@
+cat > roles/common/tasks/configure-storage.yml << 'EOF'
 ---
 - name: "STORAGE TASK 1: Display disk configuration plan"
   debug:
@@ -5,9 +6,9 @@
       - "=========================================="
       - "DISK CONFIGURATION PLAN"
       - "=========================================="
-      - "{{ disk_data1_device }} → {{ disk_data1_mount }} (Elasticsearch)"
-      - "{{ disk_data3_device }} → {{ disk_data3_mount }} (Arkime PCAPs)"
-      - "LVM Extension → {{ disk_data2_mount }} (Logs)"
+      - "{{ disk_data1_device }} -> {{ disk_data1_mount }} (Elasticsearch)"
+      - "{{ disk_data3_device }} -> {{ disk_data3_mount }} (Arkime PCAPs)"
+      - "LVM Extension -> {{ disk_data2_mount }} (Logs)"
       - "=========================================="
       - "WARNING: This will ERASE existing data!"
       - "=========================================="
@@ -27,7 +28,7 @@
   tags: ['storage']
 
 - name: "STORAGE TASK 3: Create partition on {{ disk_data1_device }}"
-  parted:
+  community.general.parted:
     device: "{{ disk_data1_device }}"
     number: 1
     state: present
@@ -37,7 +38,7 @@
   tags: ['storage']
 
 - name: "STORAGE TASK 4: Create {{ filesystem_type }} filesystem on {{ disk_data1_device }}1"
-  filesystem:
+  community.general.filesystem:
     fstype: "{{ filesystem_type }}"
     dev: "{{ disk_data1_device }}1"
     force: no
@@ -52,7 +53,7 @@
   tags: ['storage']
 
 - name: "STORAGE TASK 6: Mount {{ disk_data1_device }}1 to {{ disk_data1_mount }}"
-  mount:
+  ansible.posix.mount:
     path: "{{ disk_data1_mount }}"
     src: "{{ disk_data1_device }}1"
     fstype: "{{ filesystem_type }}"
@@ -74,7 +75,7 @@
   tags: ['storage']
 
 - name: "STORAGE TASK 8: Create partition on {{ disk_data3_device }}"
-  parted:
+  community.general.parted:
     device: "{{ disk_data3_device }}"
     number: 1
     state: present
@@ -84,7 +85,7 @@
   tags: ['storage']
 
 - name: "STORAGE TASK 9: Create {{ filesystem_type }} filesystem on {{ disk_data3_device }}1"
-  filesystem:
+  community.general.filesystem:
     fstype: "{{ filesystem_type }}"
     dev: "{{ disk_data3_device }}1"
     force: no
@@ -99,7 +100,7 @@
   tags: ['storage']
 
 - name: "STORAGE TASK 11: Mount {{ disk_data3_device }}1 to {{ disk_data3_mount }}"
-  mount:
+  ansible.posix.mount:
     path: "{{ disk_data3_mount }}"
     src: "{{ disk_data3_device }}1"
     fstype: "{{ filesystem_type }}"
@@ -139,7 +140,7 @@
   tags: ['storage']
 
 - name: "STORAGE TASK 15: Create logical volume for {{ disk_data2_mount }}"
-  lvol:
+  community.general.lvol:
     vg: "{{ disk_data2_vg }}"
     lv: "{{ disk_data2_lv_name }}"
     size: "100%FREE"
@@ -148,7 +149,7 @@
   tags: ['storage']
 
 - name: "STORAGE TASK 16: Create {{ filesystem_type }} filesystem on LV"
-  filesystem:
+  community.general.filesystem:
     fstype: "{{ filesystem_type }}"
     dev: "/dev/{{ disk_data2_vg }}/{{ disk_data2_lv_name }}"
   when: data2_mounted.rc != 0
@@ -162,7 +163,7 @@
   tags: ['storage']
 
 - name: "STORAGE TASK 18: Mount LV to {{ disk_data2_mount }}"
-  mount:
+  ansible.posix.mount:
     path: "{{ disk_data2_mount }}"
     src: "/dev/{{ disk_data2_vg }}/{{ disk_data2_lv_name }}"
     fstype: "{{ filesystem_type }}"
@@ -198,3 +199,4 @@
     - "{{ disk_data2_mount }}"
     - "{{ disk_data3_mount }}"
   tags: ['storage']
+EOF
