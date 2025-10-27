@@ -1,0 +1,29 @@
+---
+- name: "ROLLBACK ZEEK 1: Stop Zeek container"
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/zeek"
+    state: absent
+  tags: ['rollback']
+
+- name: "ROLLBACK ZEEK 2: Remove Zeek directory"
+  file:
+    path: "{{ base_directory }}/zeek"
+    state: absent
+  tags: ['rollback']
+
+- name: "ROLLBACK ZEEK 3: Preserve logs"
+  debug:
+    msg: "Zeek logs preserved at {{ zeek_log_path }}"
+  tags: ['rollback']
+
+# Uncomment to completely wipe logs
+# - name: "ROLLBACK ZEEK 3: Remove Zeek logs"
+#   file:
+#     path: "{{ zeek_log_path }}"
+#     state: absent
+#   tags: ['rollback']
+
+- name: Display rollback status
+  debug:
+    msg: "Zeek removed. Logs preserved at {{ zeek_log_path }}"
+  tags: ['rollback']
