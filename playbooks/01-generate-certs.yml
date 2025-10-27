@@ -2,10 +2,19 @@
 - name: "Step 1: Generate SSL/TLS Certificates"
   hosts: all
   become: yes
-  tags:
-    - certificates
-    - ssl
-
+  
+  vars:
+    # Certificate variables
+    base_directory: "/opt/network-sensors"
+    cert_directory: "{{ base_directory }}/certificates"
+    cert_validity_days: 365
+    cert_country: "US"
+    cert_state: "State"
+    cert_locality: "City"
+    cert_organization: "NetworkSensors"
+    server_hostname: "sensor-node-01"
+    server_domain: "local"
+  
   tasks:
     - name: Display certificate generation phase
       debug:
@@ -21,7 +30,7 @@
       tags: ['always']
 
     - name: Include certificates role
-      include_role:
+      import_role:
         name: certificates
       tags: ['certs']
 
@@ -34,9 +43,7 @@
           - "Certificates stored in: {{ cert_directory }}"
           - "Files created:"
           - "  - ca.crt (Certificate Authority)"
-          - "  - elasticsearch.crt"
-          - "  - elasticsearch.key"
-          - "  - kibana.crt"
-          - "  - kibana.key"
+          - "  - elasticsearch.crt + elasticsearch-key.pem"
+          - "  - kibana.crt + kibana-key.pem"
           - "=========================================="
       tags: ['always']
