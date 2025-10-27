@@ -1,0 +1,14 @@
+---
+- name: "Rollback: Suricata"
+  hosts: all
+  become: yes
+  
+  vars:
+    base_directory: "/opt/network-sensors"
+    suricata_log_path: "/data2/logs/suricata"
+  
+  tasks:
+    - name: Execute rollback
+      import_role:
+        name: suricata
+        tasks_from: rollback
