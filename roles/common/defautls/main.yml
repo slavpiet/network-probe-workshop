@@ -1,0 +1,26 @@
+---
+# Docker configuration
+docker_gpg_key_url: "https://download.docker.com/linux/ubuntu/gpg"
+docker_apt_repository: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+# System packages
+prerequisite_packages:
+  - ca-certificates
+  - curl
+  - gnupg
+  - jq
+  - openssl
+  - software-properties-common
+  - apt-transport-https
+  - lsb-release
+  - lvm2
+  - parted
+
+# Filesystem configuration
+filesystem_type: "ext4"
