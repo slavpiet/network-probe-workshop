@@ -68,3 +68,7 @@
   debug:
     msg: "{{ es_health.json }}"
   tags: ['elasticsearch', 'verify']
+
+- name: Setup kibana_system user
+  import_tasks: setup-kibana-user.yml
+  tags: ['elasticsearch', 'kibana-user']
