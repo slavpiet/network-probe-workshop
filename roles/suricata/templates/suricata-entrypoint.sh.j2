@@ -1,8 +1,26 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "Updating Suricata rules..."
-suricata-update || echo "Rule update failed, continuing..."
+echo "Configuring Suricata rule updates..."
+suricata-update update-sources
+suricata-update enable-source et/open
+
+echo "Updating Suricata rules from Emerging Threats..."
+suricata-update --no-test --no-reload
+
+RULE_COUNT=$(find /var/lib/suricata/rules -name "*.rules" -type f | wc -l)
+echo "Downloaded $RULE_COUNT rule files"
+
+# Start background rule updater (updates every 6 hours)
+(
+    while true; do
+        sleep 21600  # 6 hours
+        echo "Updating Suricata rules..."
+        suricata-update --no-test
+        # Signal Suricata to reload rules
+        killall -USR2 suricata || true
+    done
+) &
 
 echo "Starting Suricata on interface {{ capture_interface }}..."
 exec suricata -c /etc/suricata/suricata.yaml \
