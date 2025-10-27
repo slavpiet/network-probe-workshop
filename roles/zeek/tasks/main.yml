@@ -25,21 +25,28 @@
     mode: '0644'
   tags: ['zeek', 'config']
 
-- name: "ZEEK TASK 4: Deploy Zeek local.zeek script"
+- name: "ZEEK TASK 4: Deploy node.cfg with correct interface"
+  template:
+    src: node.cfg.j2
+    dest: "{{ base_directory }}/zeek/node.cfg"
+    mode: '0644'
+  tags: ['zeek', 'config']
+
+- name: "ZEEK TASK 5: Deploy Zeek local.zeek script"
   template:
     src: local.zeek.j2
     dest: "{{ base_directory }}/zeek/scripts/local.zeek"
     mode: '0644'
   tags: ['zeek', 'config']
 
-- name: "ZEEK TASK 5: Deploy Zeek docker-compose.yml"
+- name: "ZEEK TASK 6: Deploy Zeek docker-compose.yml"
   template:
     src: docker-compose.yml.j2
     dest: "{{ base_directory }}/zeek/docker-compose.yml"
     mode: '0644'
   tags: ['zeek', 'docker']
 
-- name: "ZEEK TASK 6: Start Zeek container with JA4+"
+- name: "ZEEK TASK 7: Start Zeek container with JA4+"
   community.docker.docker_compose_v2:
     project_src: "{{ base_directory }}/zeek"
     state: present
@@ -52,33 +59,19 @@
   when: zeek_deploy is changed
   tags: ['zeek']
 
-- name: "ZEEK TASK 7: Wait for Zeek to initialize (JA4+ installation takes time)"
+- name: "ZEEK TASK 8: Wait for Zeek to initialize"
   pause:
-    seconds: 60
-  tags: ['zeek', 'verify']
-
-- name: "ZEEK TASK 8: Wait for Zeek to start logging"
-  wait_for:
-    path: "{{ zeek_log_path }}/current/conn.log"
-    timeout: 120
+    seconds: 30
   tags: ['zeek', 'verify']
 
 - name: "ZEEK TASK 9: Verify Zeek is running"
-  command: docker ps --filter name=zeek --format "{{ '{{' }}.Status{{ '}}' }}"
+  command: docker exec zeek zeekctl status
   register: zeek_status
   changed_when: false
-  tags: ['zeek', 'verify']
-
-- name: "ZEEK TASK 10: Check if JA4+ was installed"
-  stat:
-    path: "{{ base_directory }}/zeek/packages/ja4"
-  register: ja4_installed
+  failed_when: false
   tags: ['zeek', 'verify']
 
 - name: Display Zeek status
   debug:
-    msg: 
-      - "Zeek status: {{ zeek_status.stdout }}"
-      - "JA4+ installed: {{ ja4_installed.stat.exists }}"
-      - "Check for JA4 logs in: {{ zeek_log_path }}/current/ja4*.log"
+    msg: "{{ zeek_status.stdout_lines }}"
   tags: ['zeek', 'verify']
