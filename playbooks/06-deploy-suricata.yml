@@ -1,0 +1,38 @@
+---
+- name: "Step 5: Deploy Suricata IDS"
+  hosts: all
+  become: yes
+  tags:
+    - suricata
+    - ids
+
+  tasks:
+    - name: Display Suricata deployment phase
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 5: SURICATA DEPLOYMENT"
+          - "=========================================="
+          - "Version: {{ suricata_version }}"
+          - "Capture Interface: {{ capture_interface }}"
+          - "Home Network: {{ suricata_home_net }}"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Include suricata role
+      include_role:
+        name: suricata
+      tags: ['sur']
+
+    - name: Display Suricata information
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 5: COMPLETED"
+          - "=========================================="
+          - "Suricata is running!"
+          - "Monitoring interface: {{ capture_interface }}"
+          - "Logs: {{ logs_directory }}/suricata/"
+          - "Docker Compose: {{ base_directory }}/suricata/docker-compose.yml"
+          - "=========================================="
+      tags: ['always']
