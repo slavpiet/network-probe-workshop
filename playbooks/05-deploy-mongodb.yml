@@ -1,0 +1,48 @@
+---
+- name: "Step 5: Deploy MongoDB"
+  hosts: all
+  become: yes
+  tags:
+    - mongodb
+    - database
+
+  tasks:
+    - name: Display MongoDB deployment phase
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 5: MONGODB DEPLOYMENT"
+          - "=========================================="
+          - "Version: {{ mongodb_version }}"
+          - "Port: {{ mongodb_port }}"
+          - "Required for RITA threat analysis"
+          - "Data Path: {{ mongodb_data_path }}"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Include mongodb role
+      include_role:
+        name: mongodb
+      tags: ['mongo']
+
+    - name: Wait for MongoDB to be ready
+      wait_for:
+        host: localhost
+        port: "{{ mongodb_port }}"
+        delay: 10
+        timeout: 120
+        msg: "MongoDB did not start in time"
+      tags: ['mongo', 'verify']
+
+    - name: Display MongoDB information
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 5: COMPLETED"
+          - "=========================================="
+          - "MongoDB is running!"
+          - "Port: {{ mongodb_port }}"
+          - "Data Path: {{ mongodb_data_path }}"
+          - "Docker Compose: {{ base_directory }}/mongodb/docker-compose.yml"
+          - "=========================================="
+      tags: ['always']
