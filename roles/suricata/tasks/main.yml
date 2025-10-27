@@ -38,7 +38,7 @@
 
 - name: "SURICATA TASK 6: Wait for logs"
   wait_for:
-    path: "{{ suricata_log_path }}/suricata.log"
+    path: "{{ suricata_log_path }}/eve.json"
     timeout: 60
   tags: ['suricata']
 
