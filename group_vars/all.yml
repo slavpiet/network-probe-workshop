@@ -24,7 +24,7 @@ logs_directory: "{{ disk_data2_mount }}/logs"
 arkime_pcap_path: "{{ disk_data3_mount }}/pcap"
 
 # Network Interface (SPAN port)
-capture_interface: "eth1"
+capture_interface: "eno4"
 
 # Server Configuration
 server_hostname: "sensor-node-01"
