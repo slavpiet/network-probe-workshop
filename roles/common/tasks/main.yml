@@ -1,0 +1,8 @@
+---
+- name: Include all common setup tasks
+  include_tasks: "{{ item }}"
+  loop:
+    - update-system.yml
+    - install-docker.yml
+    - configure-storage.yml
+    - create-directories.yml
