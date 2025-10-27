@@ -1,8 +1,16 @@
 ---
-- name: Include all common setup tasks
-  include_tasks: "{{ item }}"
-  loop:
-    - update-system.yml
-    - install-docker.yml
-    - configure-storage.yml
-    - create-directories.yml
+- name: Update system
+  import_tasks: update-system.yml
+  tags: ['update-system']
+
+- name: Install docker
+  import_tasks: install-docker.yml
+  tags: ['docker']
+
+- name: Configure storage
+  import_tasks: configure-storage.yml
+  tags: ['storage']
+
+- name: Create base directories
+  import_tasks: create-directories.yml
+  tags: ['dirs']
