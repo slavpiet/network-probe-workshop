@@ -2,9 +2,18 @@
 - name: "Rollback: System Preparation"
   hosts: all
   become: yes
-  tags:
-    - rollback
-
+  
+  vars:
+    # Storage variables needed for rollback
+    disk_data1_device: "/dev/sdb"
+    disk_data1_mount: "/data1"
+    disk_data2_lv_name: "data2-lv"
+    disk_data2_mount: "/data2"
+    disk_data2_vg: "ubuntu-vg"
+    disk_data3_device: "/dev/sda"
+    disk_data3_mount: "/data3"
+    base_directory: "/opt/network-sensors"
+  
   tasks:
     - name: Display rollback information
       debug:
@@ -12,12 +21,12 @@
           - "=========================================="
           - "ROLLBACK: SYSTEM PREPARATION"
           - "=========================================="
-          - "This will reverse all changes from 00-prepare-system.yml"
+          - "This will reverse all changes from Phase 0"
           - "=========================================="
       tags: ['always']
 
     - name: Execute rollback tasks
-      include_role:
+      import_role:
         name: common
         tasks_from: rollback
       tags: ['rollback']
