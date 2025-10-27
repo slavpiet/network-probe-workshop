@@ -1,0 +1,66 @@
+---
+- name: "Master Deployment: Complete Network Sensor Stack"
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Display master deployment banner
+      debug:
+        msg:
+          - "=========================================="
+          - "NETWORK SENSOR STACK - FULL DEPLOYMENT"
+          - "=========================================="
+          - "This will deploy the complete stack:"
+          - "  0. System Preparation"
+          - "  1. SSL Certificates"
+          - "  2. Elasticsearch"
+          - "  3. Kibana"
+          - "  4. Logstash"
+          - "  5. MongoDB (for RITA)"
+          - "  6. Suricata IDS"
+          - "  7. Zeek NSM"
+          - "  8. Arkime PCAP"
+          - "  9. RITA Threat Analysis"
+          - "=========================================="
+      tags: ['always']
+
+- import_playbook: 00-prepare-system.yml
+- import_playbook: 01-generate-certs.yml
+- import_playbook: 02-deploy-elasticsearch.yml
+- import_playbook: 03-deploy-kibana.yml
+- import_playbook: 04-deploy-logstash.yml
+- import_playbook: 05-deploy-mongodb.yml
+- import_playbook: 06-deploy-suricata.yml
+- import_playbook: 07-deploy-zeek.yml
+- import_playbook: 08-deploy-arkime.yml
+- import_playbook: 09-deploy-rita.yml
+
+- name: Display final summary
+  hosts: all
+  become: yes
+  tasks:
+    - name: Show deployment summary
+      debug:
+        msg:
+          - "=========================================="
+          - "DEPLOYMENT COMPLETED SUCCESSFULLY!"
+          - "=========================================="
+          - "Access Points:"
+          - "  Elasticsearch: https://localhost:9200"
+          - "  Kibana: http://localhost:5601"
+          - "  Arkime: http://localhost:8005"
+          - "  MongoDB: localhost:27017"
+          - ""
+          - "Monitoring:"
+          - "  Interface: {{ capture_interface }}"
+          - "  Suricata: Active"
+          - "  Zeek: Active"
+          - "  Arkime: Capturing"
+          - ""
+          - "Management:"
+          - "  Base: {{ base_directory }}"
+          - "  ES Data: {{ elasticsearch_data_path }}"
+          - "  MongoDB Data: {{ mongodb_data_path }}"
+          - "  Logs: {{ logs_directory }}"
+          - "  PCAPs: {{ arkime_pcap_path }}"
+          - "=========================================="
