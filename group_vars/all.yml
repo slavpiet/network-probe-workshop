@@ -7,28 +7,24 @@
 base_directory: "/opt/network-sensors"
 
 # Storage Configuration
-# /dev/sdb → /data1 (Elasticsearch indices)
 disk_data1_device: "/dev/sdb"
 disk_data1_mount: "/data1"
-disk_data1_size: "558G"
 
-# LVM Extension → /data2 (Logs from Suricata, Zeek, RITA)
 disk_data2_lv_name: "data2-lv"
 disk_data2_mount: "/data2"
 disk_data2_vg: "ubuntu-vg"
 
-# /dev/sda → /data3 (Arkime PCAPs - Full 1.1TB)
 disk_data3_device: "/dev/sda"
 disk_data3_mount: "/data3"
-disk_data3_size: "1.1T"
 
 # Data Directories (on mounted volumes)
 elasticsearch_data_path: "{{ disk_data1_mount }}/elasticsearch"
+mongodb_data_path: "{{ disk_data1_mount }}/mongodb"
 logs_directory: "{{ disk_data2_mount }}/logs"
 arkime_pcap_path: "{{ disk_data3_mount }}/pcap"
 
 # Network Interface (SPAN port)
-capture_interface: "eno4"  # CHANGE THIS TO YOUR SPAN INTERFACE
+capture_interface: "eth1"
 
 # Server Configuration
 server_hostname: "sensor-node-01"
@@ -47,7 +43,6 @@ elasticsearch_http_port: 9200
 elasticsearch_transport_port: 9300
 elasticsearch_heap_size: "4g"
 elasticsearch_password: "ChangeMe123!"
-elasticsearch_data_path: "{{ disk_data1_mount }}/elasticsearch"
 
 # ===========================================
 # KIBANA CONFIGURATION
@@ -66,7 +61,7 @@ logstash_heap_size: "2g"
 # SURICATA CONFIGURATION
 # ===========================================
 suricata_version: "8.0.1"
-suricata_home_net: "192.168.0.0/16"  # CHANGE THIS TO YOUR NETWORK
+suricata_home_net: "192.168.0.0/16"
 
 # ===========================================
 # ZEEK CONFIGURATION
@@ -86,11 +81,10 @@ arkime_password: "ChangeMe123!"
 rita_version: "4.8.0"
 
 # ===========================================
-# MONGODB CONFIGURATION (for RITA)
+# MONGODB CONFIGURATION
 # ===========================================
 mongodb_version: "6.0"
 mongodb_port: 27017
-mongodb_data_path: "{{ disk_data1_mount }}/mongodb"
 
 # ===========================================
 # SSL/TLS CONFIGURATION
