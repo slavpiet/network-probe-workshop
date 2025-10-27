@@ -38,5 +38,24 @@ echo "Starting Zeek..."
 # Start Zeek with zeekctl
 zeekctl deploy
 
+# Check if zeek is actually running
+sleep 5
+ZEEK_STATUS=$(zeekctl status)
+echo "$ZEEK_STATUS"
+
+if echo "$ZEEK_STATUS" | grep -q "crashed"; then
+    echo "ERROR: Zeek crashed! Running diagnostics..."
+    zeekctl diag
+    exit 1
+fi
+
+if ! echo "$ZEEK_STATUS" | grep -q "running"; then
+    echo "ERROR: Zeek not running! Running diagnostics..."
+    zeekctl diag
+    exit 1
+fi
+
+echo "Zeek started successfully!"
+
 # Keep container running by tailing logs
-tail -f /usr/local/zeek/logs/current/stdout.log
+tail -f /usr/local/zeek/logs/current/stdout.log /usr/local/zeek/logs/current/stderr.log
