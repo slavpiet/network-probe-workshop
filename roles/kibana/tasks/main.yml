@@ -51,8 +51,9 @@
 
 - name: "KIBANA TASK 6: Wait for Kibana to be healthy"
   uri:
-    url: "http://localhost:{{ kibana_port }}/api/status"
+    url: "https://localhost:{{ kibana_port }}/api/status"
     method: GET
+    validate_certs: no
     status_code: 200
   register: kibana_health
   until: kibana_health.status == 200
