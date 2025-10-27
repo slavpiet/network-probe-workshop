@@ -5,15 +5,17 @@ server.name: {{ server_hostname }}
 server.host: "0.0.0.0"
 server.port: {{ kibana_port }}
 
+# Kibana HTTPS
+server.ssl.enabled: true
+server.ssl.certificate: /usr/share/kibana/config/certs/kibana.crt
+server.ssl.key: /usr/share/kibana/config/certs/kibana-key.pem
+
 # Elasticsearch connection
 elasticsearch.hosts: ["https://localhost:{{ elasticsearch_http_port }}"]
 elasticsearch.username: "kibana_system"
 elasticsearch.password: "{{ elasticsearch_password }}"
 elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certs/ca.crt"]
 elasticsearch.ssl.verificationMode: certificate
-
-# Kibana server SSL (disabled for simplicity - accessing via localhost)
-server.ssl.enabled: false
 
 # Monitoring
 monitoring.ui.enabled: true
