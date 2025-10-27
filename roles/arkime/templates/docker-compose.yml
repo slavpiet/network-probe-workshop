@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  arkime:
+    image: arkime/arkime:{{ arkime_version }}
+    container_name: arkime
+    restart: unless-stopped
+    network_mode: "host"
+    environment:
+      - ARKIME_HEAP=1024m
+      - ARKIME_PCAP_PATH={{ arkime_pcap_path }}
+      - ARKIME_VIEWER_PORT={{ arkime_port }}
+    volumes:
+      - {{ arkime_pcap_path }}:{{ arkime_pcap_path }}
+      - {{ arkime_config_dir }}:/arkime/etc
+      - {{ base_directory }}/arkime/logs:/arkime/logs
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -sSf http://127.0.0.1:{{ arkime_port }}/ || exit 1"]
+      interval: 30s
+      retries: 5
