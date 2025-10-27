@@ -1,0 +1,6 @@
+---
+zeek_version: "8.0.1"
+capture_interface: "eno4"
+base_directory: "/opt/network-sensors"
+logs_directory: "/data2/logs"
+zeek_log_path: "{{ logs_directory }}/zeek"
