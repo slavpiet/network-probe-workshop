@@ -11,7 +11,8 @@ services:
     entrypoint: /opt/zeek-entrypoint.sh
     volumes:
       - {{ zeek_log_path }}:/usr/local/zeek/logs
-      - {{ base_directory }}/zeek/scripts:/usr/local/zeek/share/zeek/site:ro
+      - {{ base_directory }}/zeek/scripts/local.zeek:/usr/local/zeek/share/zeek/site/local.zeek:ro
+      - {{ base_directory }}/zeek/packages:/usr/local/zeek/share/zeek/site/packages
       - {{ base_directory }}/zeek/zeek-entrypoint.sh:/opt/zeek-entrypoint.sh:ro
     restart: unless-stopped
     healthcheck:
