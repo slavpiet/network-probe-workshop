@@ -1,0 +1,143 @@
+---
+- name: "ROLLBACK: Display rollback warning"
+  debug:
+    msg:
+      - "=========================================="
+      - "WARNING: ROLLBACK OPERATION"
+      - "=========================================="
+      - "This will:"
+      - "  1. Remove Docker and all containers"
+      - "  2. Unmount all data volumes"
+      - "  3. Remove LVM logical volume"
+      - "  4. Remove directory structure"
+      - "=========================================="
+      - "DATA WILL BE PRESERVED ON DISKS"
+      - "But filesystem mounts will be removed"
+      - "=========================================="
+  tags: ['rollback']
+
+- name: Confirm rollback operation
+  pause:
+    prompt: "Type 'yes' to continue with rollback"
+  register: rollback_confirm
+  tags: ['rollback']
+
+- name: Stop rollback if not confirmed
+  fail:
+    msg: "Rollback aborted by user"
+  when: "'yes' not in rollback_confirm.user_input | lower"
+  tags: ['rollback']
+
+- name: "ROLLBACK 1: Stop all Docker containers"
+  command: docker stop $(docker ps -aq)
+  failed_when: false
+  tags: ['rollback']
+
+- name: "ROLLBACK 2: Remove all Docker containers"
+  command: docker rm $(docker ps -aq)
+  failed_when: false
+  tags: ['rollback']
+
+- name: "ROLLBACK 3: Remove ansible user from docker group"
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: no
+  tags: ['rollback']
+
+- name: "ROLLBACK 4: Stop Docker service"
+  systemd:
+    name: docker
+    state: stopped
+    enabled: no
+  tags: ['rollback']
+
+- name: "ROLLBACK 6: Remove Docker packages"
+  apt:
+    name: "{{ docker_packages }}"
+    state: absent
+    purge: yes
+  tags: ['rollback']
+
+- name: "ROLLBACK 7: Remove Docker repository"
+  apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: absent
+  tags: ['rollback']
+
+- name: "ROLLBACK 8: Remove Docker GPG key"
+  file:
+    path: /etc/apt/keyrings/docker.gpg
+    state: absent
+  tags: ['rollback']
+
+- name: "ROLLBACK 9: Unmount {{ disk_data1_mount }}"
+  mount:
+    path: "{{ disk_data1_mount }}"
+    state: unmounted
+  tags: ['rollback']
+
+- name: "ROLLBACK 10: Remove {{ disk_data1_mount }} from fstab"
+  mount:
+    path: "{{ disk_data1_mount }}"
+    state: absent
+  tags: ['rollback']
+
+- name: "ROLLBACK 11: Unmount {{ disk_data3_mount }}"
+  mount:
+    path: "{{ disk_data3_mount }}"
+    state: unmounted
+  tags: ['rollback']
+
+- name: "ROLLBACK 12: Remove {{ disk_data3_mount }} from fstab"
+  mount:
+    path: "{{ disk_data3_mount }}"
+    state: absent
+  tags: ['rollback']
+
+- name: "ROLLBACK 13: Unmount {{ disk_data2_mount }}"
+  mount:
+    path: "{{ disk_data2_mount }}"
+    state: unmounted
+  tags: ['rollback']
+
+- name: "ROLLBACK 14: Remove {{ disk_data2_mount }} from fstab"
+  mount:
+    path: "{{ disk_data2_mount }}"
+    state: absent
+  tags: ['rollback']
+
+- name: "ROLLBACK 15: Remove LVM logical volume"
+  lvol:
+    vg: "{{ disk_data2_vg }}"
+    lv: "{{ disk_data2_lv_name }}"
+    state: absent
+    force: yes
+  tags: ['rollback']
+
+- name: "ROLLBACK 15: Remove directory structure"
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ base_directory }}"
+    - "{{ disk_data1_mount }}"
+    - "{{ disk_data2_mount }}"
+    - "{{ disk_data3_mount }}"
+  tags: ['rollback']
+
+- name: Display rollback completion
+  debug:
+    msg:
+      - "=========================================="
+      - "ROLLBACK COMPLETED"
+      - "=========================================="
+      - "Docker has been removed"
+      - "All mounts have been unmounted"
+      - "LVM volume removed"
+      - "Directories removed"
+      - ""
+      - "NOTE: Data on disks preserved"
+      - "Partitions on {{ disk_data1_device }} and {{ disk_data3_device }} still exist"
+      - "=========================================="
+  tags: ['rollback']
