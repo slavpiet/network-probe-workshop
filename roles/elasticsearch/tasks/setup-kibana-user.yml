@@ -1,0 +1,32 @@
+---
+- name: "ES KIBANA USER: Wait for Elasticsearch to be ready"
+  uri:
+    url: "https://localhost:{{ elasticsearch_http_port }}/_cluster/health"
+    method: GET
+    user: elastic
+    password: "{{ elasticsearch_password }}"
+    validate_certs: no
+    status_code: 200
+  register: es_ready
+  until: es_ready.status == 200
+  retries: 30
+  delay: 10
+  tags: ['elasticsearch', 'kibana-user']
+
+- name: "ES KIBANA USER: Set kibana_system user password"
+  uri:
+    url: "https://localhost:{{ elasticsearch_http_port }}/_security/user/kibana_system/_password"
+    method: POST
+    user: elastic
+    password: "{{ elasticsearch_password }}"
+    body_format: json
+    body:
+      password: "{{ elasticsearch_password }}"
+    validate_certs: no
+    status_code: 200
+  tags: ['elasticsearch', 'kibana-user']
+
+- name: Display kibana_system user setup
+  debug:
+    msg: "kibana_system user password configured"
+  tags: ['elasticsearch', 'kibana-user']
