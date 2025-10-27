@@ -1,0 +1,23 @@
+---
+- name: "Rollback: Certificate Generation"
+  hosts: all
+  become: yes
+  
+  vars:
+    base_directory: "/opt/network-sensors"
+    cert_directory: "{{ base_directory }}/certificates"
+  
+  tasks:
+    - name: Display rollback information
+      debug:
+        msg:
+          - "=========================================="
+          - "ROLLBACK: CERTIFICATE GENERATION"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Execute rollback tasks
+      import_role:
+        name: certificates
+        tasks_from: rollback
+      tags: ['rollback']
