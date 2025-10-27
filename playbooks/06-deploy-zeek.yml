@@ -1,0 +1,37 @@
+---
+- name: "Step 6: Deploy Zeek Network Security Monitor"
+  hosts: all
+  become: yes
+  tags:
+    - zeek
+    - nsm
+
+  tasks:
+    - name: Display Zeek deployment phase
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 6: ZEEK DEPLOYMENT"
+          - "=========================================="
+          - "Version: {{ zeek_version }}"
+          - "Capture Interface: {{ capture_interface }}"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Include zeek role
+      include_role:
+        name: zeek
+      tags: ['zk']
+
+    - name: Display Zeek information
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 6: COMPLETED"
+          - "=========================================="
+          - "Zeek is running!"
+          - "Monitoring interface: {{ capture_interface }}"
+          - "Logs: {{ logs_directory }}/zeek/"
+          - "Docker Compose: {{ base_directory }}/zeek/docker-compose.yml"
+          - "=========================================="
+      tags: ['always']
