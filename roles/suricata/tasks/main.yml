@@ -1,0 +1,51 @@
+---
+- name: "SURICATA TASK 1: Create directories"
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ base_directory }}/suricata"
+    - "{{ suricata_log_path }}"
+  tags: ['suricata']
+
+- name: "SURICATA TASK 2: Deploy entrypoint script"
+  template:
+    src: suricata-entrypoint.sh.j2
+    dest: "{{ base_directory }}/suricata/suricata-entrypoint.sh"
+    mode: '0755'
+  tags: ['suricata']
+
+- name: "SURICATA TASK 3: Deploy suricata.yaml"
+  template:
+    src: suricata.yaml.j2
+    dest: "{{ base_directory }}/suricata/suricata.yaml"
+    mode: '0644'
+  tags: ['suricata']
+
+- name: "SURICATA TASK 4: Deploy docker-compose.yml"
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ base_directory }}/suricata/docker-compose.yml"
+    mode: '0644'
+  tags: ['suricata']
+
+- name: "SURICATA TASK 5: Start Suricata"
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/suricata"
+    state: present
+  tags: ['suricata']
+
+- name: "SURICATA TASK 6: Wait for logs"
+  wait_for:
+    path: "{{ suricata_log_path }}/suricata.log"
+    timeout: 60
+  tags: ['suricata']
+
+- name: Display status
+  debug:
+    msg: 
+      - "Suricata running on {{ capture_interface }}"
+      - "Logs: {{ suricata_log_path }}/"
+      - "EVE JSON: {{ suricata_log_path }}/eve.json"
+  tags: ['suricata']
