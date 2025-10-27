@@ -12,6 +12,9 @@ if [ ! -d "/usr/local/zeek/share/zeek/site/packages/ja4" ]; then
         apt-get update && apt-get install -y git
     fi
     
+    # Clean up any previous failed attempts
+    rm -rf /tmp/ja4
+    
     # Clone JA4+
     cd /tmp
     git clone https://github.com/FoxIO-LLC/ja4.git
