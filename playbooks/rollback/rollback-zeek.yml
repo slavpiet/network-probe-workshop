@@ -1,0 +1,23 @@
+---
+- name: "Rollback: Zeek Deployment"
+  hosts: all
+  become: yes
+  
+  vars:
+    base_directory: "/opt/network-sensors"
+    zeek_log_path: "/data2/logs/zeek"
+  
+  tasks:
+    - name: Display rollback information
+      debug:
+        msg:
+          - "=========================================="
+          - "ROLLBACK: ZEEK"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Execute rollback tasks
+      import_role:
+        name: zeek
+        tasks_from: rollback
+      tags: ['rollback']
