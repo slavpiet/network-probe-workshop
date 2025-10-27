@@ -1,0 +1,75 @@
+---
+- name: Ensure arkime base directory exists
+  file:
+    path: "{{ base_directory }}/arkime"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure PCAP directory exists
+  file:
+    path: "{{ arkime_pcap_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0775'
+    recurse: yes
+
+- name: Ensure arkime config and logs directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - "{{ base_directory }}/arkime/config"
+    - "{{ base_directory }}/arkime/logs"
+
+- name: Copy TLS certs for Arkime (if present)
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ base_directory }}/arkime/config/{{ item.dest }}"
+    mode: '0644'
+  with_items:
+    - { src: "{{ cert_directory }}/ca.crt", dest: "ca.crt" }
+    - { src: "{{ cert_directory }}/arkime.crt", dest: "arkime.crt" }
+    - { src: "{{ cert_directory }}/arkime.key", dest: "arkime.key" }
+  when: cert_directory is defined
+  ignore_errors: yes
+
+- name: Deploy docker-compose for Arkime
+  template:
+    src: "docker-compose.yml.j2"
+    dest: "{{ base_directory }}/arkime/docker-compose.yml"
+    mode: '0644'
+
+- name: Pull Arkime Docker images (compose)
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/arkime"
+    pull: yes
+
+- name: Start Arkime stack (docker-compose)
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/arkime"
+    state: present
+    restarted: yes
+
+- name: Wait for Arkime viewer to respond on port {{ arkime_port }}
+  wait_for:
+    host: "127.0.0.1"
+    port: "{{ arkime_port }}"
+    timeout: 180
+    state: started
+
+- block:
+    - name: Create Arkime admin user via container (idempotent)
+      shell: |
+        if ! docker exec arkime /arkime/bin/arkime_user.sh -l | grep -q "^admin:"; then
+          docker exec arkime /arkime/bin/arkime_add_user.sh admin "{{ arkime_password }}"
+        fi
+      args:
+        warn: false
+  when: arkime_auto_create_admin | default(true)
+  ignore_errors: false
