@@ -1,0 +1,5 @@
+---
+- name: restart elasticsearch
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/elasticsearch"
+    state: restarted
