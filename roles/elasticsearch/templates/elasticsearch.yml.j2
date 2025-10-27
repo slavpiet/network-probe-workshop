@@ -1,0 +1,36 @@
+# Elasticsearch 9.0 Configuration
+cluster.name: sensor-cluster
+node.name: sensor-node
+
+# Network
+network.host: 0.0.0.0
+http.port: {{ elasticsearch_http_port }}
+transport.port: {{ elasticsearch_transport_port }}
+
+# Paths
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
+
+# Discovery
+discovery.type: single-node
+
+# Security
+xpack.security.enabled: true
+xpack.security.enrollment.enabled: false
+
+# SSL/TLS for HTTP
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.key: elasticsearch-key.pem
+xpack.security.http.ssl.certificate: elasticsearch.crt
+xpack.security.http.ssl.certificate_authorities: ca.crt
+xpack.security.http.ssl.verification_mode: certificate
+
+# SSL/TLS for Transport
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.key: elasticsearch-key.pem
+xpack.security.transport.ssl.certificate: elasticsearch.crt
+xpack.security.transport.ssl.certificate_authorities: ca.crt
+xpack.security.transport.ssl.verification_mode: certificate
+
+# Monitoring
+xpack.monitoring.collection.enabled: true
