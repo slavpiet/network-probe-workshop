@@ -1,24 +1,31 @@
 #!/bin/bash
 set -e
 
-echo "Installing JA4+ Zeek package..."
+echo "Checking JA4+ installation..."
 
-# Install git if not present
-if ! command -v git &> /dev/null; then
-    apt-get update && apt-get install -y git
-fi
-
-# Clone JA4+ if not already present
-if [ ! -d "/tmp/ja4" ]; then
+# Check if JA4+ is already installed
+if [ ! -d "/usr/local/zeek/share/zeek/site/packages/ja4" ]; then
+    echo "Installing JA4+ Zeek package..."
+    
+    # Install git if not present
+    if ! command -v git &> /dev/null; then
+        apt-get update && apt-get install -y git
+    fi
+    
+    # Clone JA4+
     cd /tmp
     git clone https://github.com/FoxIO-LLC/ja4.git
+    
+    # Install JA4+ package
+    cd /tmp/ja4/zeek
+    zkg install --force .
+    
+    echo "JA4+ installed successfully!"
+else
+    echo "JA4+ already installed, skipping installation"
 fi
 
-# Install JA4+ package
-cd /tmp/ja4/zeek
-zkg install --force .
-
-echo "JA4+ installed successfully!"
+echo "Starting Zeek..."
 
 # Start Zeek
 exec zeekctl deploy
