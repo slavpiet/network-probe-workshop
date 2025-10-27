@@ -1,0 +1,23 @@
+---
+- name: "Rollback: Elasticsearch Deployment"
+  hosts: all
+  become: yes
+  
+  vars:
+    base_directory: "/opt/network-sensors"
+    elasticsearch_data_path: "/data1/elasticsearch"
+  
+  tasks:
+    - name: Display rollback information
+      debug:
+        msg:
+          - "=========================================="
+          - "ROLLBACK: ELASTICSEARCH"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Execute rollback tasks
+      import_role:
+        name: elasticsearch
+        tasks_from: rollback
+      tags: ['rollback']
