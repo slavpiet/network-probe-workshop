@@ -9,34 +9,31 @@ if [ ! -d "/usr/local/zeek/share/zeek/site/packages/ja4" ]; then
     
     # Install dependencies
     echo "Installing git..."
-    apt-get update -qq && apt-get install -y -qq git ca-certificates
+    apt-get update -qq && apt-get install -y -qq git ca-certificates 2>&1 | grep -v "debconf"
     
-    # Clean up and create fresh temp directory
-    echo "Preparing temporary directory..."
-    rm -rf /tmp/ja4-install
-    mkdir -p /tmp/ja4-install
-    cd /tmp/ja4-install
-    
-    # Clone JA4+ with full output for debugging
-    echo "Cloning JA4+ repository..."
-    git clone --depth 1 https://github.com/FoxIO-LLC/ja4.git
-    
-    if [ ! -d "ja4/zeek" ]; then
-        echo "ERROR: JA4+ clone failed or zeek directory not found!"
-        exit 1
-    fi
-    
-    # Install JA4+ package
-    echo "Installing JA4+ via zkg..."
-    cd ja4/zeek
-    zkg install --force .
+    # Install JA4+ directly from GitHub URL using zkg
+    echo "Installing JA4+ via zkg from GitHub..."
+    zkg install --force https://github.com/FoxIO-LLC/ja4
     
     # Verify installation
-    if [ -d "/usr/local/zeek/share/zeek/site/packages/ja4" ]; then
+    if zkg list | grep -q ja4; then
         echo "JA4+ installed successfully!"
     else
         echo "ERROR: JA4+ installation verification failed!"
-        exit 1
+        echo "Attempting manual installation..."
+        
+        # Manual fallback installation
+        rm -rf /tmp/ja4-manual
+        mkdir -p /tmp/ja4-manual
+        cd /tmp/ja4-manual
+        
+        git clone --depth 1 https://github.com/FoxIO-LLC/ja4.git
+        
+        # Copy scripts manually to site directory
+        mkdir -p /usr/local/zeek/share/zeek/site/packages/ja4
+        cp -r ja4/zeek/* /usr/local/zeek/share/zeek/site/packages/ja4/
+        
+        echo "JA4+ manually installed!"
     fi
 else
     echo "JA4+ already installed, skipping installation"
