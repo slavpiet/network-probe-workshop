@@ -1,0 +1,38 @@
+---
+- name: "Step 4: Deploy Logstash"
+  hosts: all
+  become: yes
+  tags:
+    - logstash
+    - elk
+
+  tasks:
+    - name: Display Logstash deployment phase
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 4: LOGSTASH DEPLOYMENT"
+          - "=========================================="
+          - "Version: {{ logstash_version }}"
+          - "Beats Input Port: {{ logstash_port }}"
+          - "Heap Size: {{ logstash_heap_size }}"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Include logstash role
+      include_role:
+        name: logstash
+      tags: ['ls']
+
+    - name: Display Logstash information
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 4: COMPLETED"
+          - "=========================================="
+          - "Logstash is running!"
+          - "Listening on port: {{ logstash_port }}"
+          - "Docker Compose: {{ base_directory }}/logstash/docker-compose.yml"
+          - "Pipeline configs: {{ base_directory }}/logstash/pipeline/"
+          - "=========================================="
+      tags: ['always']
