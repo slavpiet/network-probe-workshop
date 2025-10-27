@@ -1,0 +1,39 @@
+---
+- name: "Step 0: Prepare System for Network Sensor Stack"
+  hosts: all
+  become: yes
+  tags:
+    - prepare
+    - system
+
+  tasks:
+    - name: Display preparation phase information
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 0: SYSTEM PREPARATION"
+          - "=========================================="
+          - "This playbook will:"
+          - "  1. Update system packages"
+          - "  2. Install Docker and Docker Compose"
+          - "  3. Create directory structure"
+          - "  4. Configure system settings"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Include common role
+      include_role:
+        name: common
+      tags: ['common']
+
+    - name: Display completion summary
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 0: COMPLETED"
+          - "=========================================="
+          - "Base directory: {{ base_directory }}"
+          - "Data directory: {{ data_directory }}"
+          - "Docker network: {{ docker_network_name }}"
+          - "=========================================="
+      tags: ['always']
