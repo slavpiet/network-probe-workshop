@@ -1,0 +1,74 @@
+---
+- name: "ES TASK 1: Create Elasticsearch configuration directory"
+  file:
+    path: "{{ base_directory }}/elasticsearch/config"
+    state: directory
+    mode: '0755'
+  tags: ['elasticsearch', 'config']
+
+- name: "ES TASK 2: Ensure Elasticsearch data directory exists with correct permissions"
+  file:
+    path: "{{ elasticsearch_data_path }}"
+    state: directory
+    mode: '0755'
+    owner: "1000"
+    group: "1000"
+  tags: ['elasticsearch', 'storage']
+
+- name: "ES TASK 3: Deploy Elasticsearch configuration file"
+  template:
+    src: elasticsearch.yml.j2
+    dest: "{{ base_directory }}/elasticsearch/config/elasticsearch.yml"
+    mode: '0644'
+  tags: ['elasticsearch', 'config']
+
+- name: "ES TASK 4: Copy SSL certificates to Elasticsearch directory"
+  copy:
+    src: "{{ cert_directory }}/{{ item }}"
+    dest: "{{ base_directory }}/elasticsearch/config/{{ item }}"
+    remote_src: yes
+    mode: '0644'
+  loop:
+    - ca.crt
+    - elasticsearch.crt
+    - elasticsearch-key.pem
+  tags: ['elasticsearch', 'certs']
+
+- name: "ES TASK 5: Deploy Elasticsearch docker-compose.yml"
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ base_directory }}/elasticsearch/docker-compose.yml"
+    mode: '0644'
+  tags: ['elasticsearch', 'docker']
+
+- name: "ES TASK 6: Start Elasticsearch container"
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/elasticsearch"
+    state: present
+  register: elasticsearch_deploy
+  tags: ['elasticsearch', 'deploy']
+
+- name: Display Elasticsearch deployment status
+  debug:
+    msg: "Elasticsearch container deployed"
+  when: elasticsearch_deploy is changed
+  tags: ['elasticsearch']
+
+- name: "ES TASK 7: Wait for Elasticsearch to be healthy"
+  uri:
+    url: "https://localhost:{{ elasticsearch_http_port }}/_cluster/health"
+    method: GET
+    user: elastic
+    password: "{{ elasticsearch_password }}"
+    validate_certs: no
+    status_code: 200
+  register: es_health
+  until: es_health.status == 200
+  retries: 30
+  delay: 10
+  tags: ['elasticsearch', 'verify']
+
+- name: Display Elasticsearch health status
+  debug:
+    msg: "{{ es_health.json }}"
+  tags: ['elasticsearch', 'verify']
