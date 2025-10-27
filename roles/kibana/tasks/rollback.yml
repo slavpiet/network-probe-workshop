@@ -1,0 +1,17 @@
+---
+- name: "ROLLBACK KIBANA 1: Stop Kibana container"
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/kibana"
+    state: absent
+  tags: ['rollback']
+
+- name: "ROLLBACK KIBANA 2: Remove Kibana directory"
+  file:
+    path: "{{ base_directory }}/kibana"
+    state: absent
+  tags: ['rollback']
+
+- name: Display rollback status
+  debug:
+    msg: "Kibana removed successfully"
+  tags: ['rollback']
