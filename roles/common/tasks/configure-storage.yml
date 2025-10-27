@@ -18,15 +18,14 @@
     prompt: "About to configure disks. Press ENTER to continue or Ctrl+C to abort"
   tags: ['storage']
 
-# Configure /data1 (Elasticsearch) on /dev/sdb
-- name: "STORAGE TASK 2: Check if {{ disk_data1_device }} is already mounted"
+- name: "STORAGE TASK 2: Check if data1 mount exists"
   command: mountpoint -q {{ disk_data1_mount }}
   register: data1_mounted
   failed_when: false
   changed_when: false
   tags: ['storage']
 
-- name: "STORAGE TASK 3: Create partition on {{ disk_data1_device }}"
+- name: "STORAGE TASK 3: Create partition on data1 device"
   community.general.parted:
     device: "{{ disk_data1_device }}"
     number: 1
@@ -36,7 +35,7 @@
   when: data1_mounted.rc != 0
   tags: ['storage']
 
-- name: "STORAGE TASK 4: Create {{ filesystem_type }} filesystem on {{ disk_data1_device }}1"
+- name: "STORAGE TASK 4: Create filesystem on data1"
   community.general.filesystem:
     fstype: "{{ filesystem_type }}"
     dev: "{{ disk_data1_device }}1"
@@ -44,14 +43,14 @@
   when: data1_mounted.rc != 0
   tags: ['storage']
 
-- name: "STORAGE TASK 5: Create {{ disk_data1_mount }} directory"
+- name: "STORAGE TASK 5: Create data1 mount directory"
   file:
     path: "{{ disk_data1_mount }}"
     state: directory
     mode: '0755'
   tags: ['storage']
 
-- name: "STORAGE TASK 6: Mount {{ disk_data1_device }}1 to {{ disk_data1_mount }}"
+- name: "STORAGE TASK 6: Mount data1 device"
   ansible.posix.mount:
     path: "{{ disk_data1_mount }}"
     src: "{{ disk_data1_device }}1"
@@ -65,15 +64,14 @@
     msg: "{{ disk_data1_mount }} mounted successfully for Elasticsearch"
   tags: ['storage']
 
-# Configure /data3 (Arkime PCAPs) on /dev/sda
-- name: "STORAGE TASK 7: Check if {{ disk_data3_device }} is already mounted"
+- name: "STORAGE TASK 7: Check if data3 mount exists"
   command: mountpoint -q {{ disk_data3_mount }}
   register: data3_mounted
   failed_when: false
   changed_when: false
   tags: ['storage']
 
-- name: "STORAGE TASK 8: Create partition on {{ disk_data3_device }}"
+- name: "STORAGE TASK 8: Create partition on data3 device"
   community.general.parted:
     device: "{{ disk_data3_device }}"
     number: 1
@@ -83,7 +81,7 @@
   when: data3_mounted.rc != 0
   tags: ['storage']
 
-- name: "STORAGE TASK 9: Create {{ filesystem_type }} filesystem on {{ disk_data3_device }}1"
+- name: "STORAGE TASK 9: Create filesystem on data3"
   community.general.filesystem:
     fstype: "{{ filesystem_type }}"
     dev: "{{ disk_data3_device }}1"
@@ -91,14 +89,14 @@
   when: data3_mounted.rc != 0
   tags: ['storage']
 
-- name: "STORAGE TASK 10: Create {{ disk_data3_mount }} directory"
+- name: "STORAGE TASK 10: Create data3 mount directory"
   file:
     path: "{{ disk_data3_mount }}"
     state: directory
     mode: '0755'
   tags: ['storage']
 
-- name: "STORAGE TASK 11: Mount {{ disk_data3_device }}1 to {{ disk_data3_mount }}"
+- name: "STORAGE TASK 11: Mount data3 device"
   ansible.posix.mount:
     path: "{{ disk_data3_mount }}"
     src: "{{ disk_data3_device }}1"
@@ -112,20 +110,19 @@
     msg: "{{ disk_data3_mount }} mounted successfully for Arkime PCAPs"
   tags: ['storage']
 
-# Configure /data2 (Logs) using LVM extension
-- name: "STORAGE TASK 12: Check if {{ disk_data2_mount }} is already mounted"
+- name: "STORAGE TASK 12: Check if data2 mount exists"
   command: mountpoint -q {{ disk_data2_mount }}
   register: data2_mounted
   failed_when: false
   changed_when: false
   tags: ['storage']
 
-- name: "STORAGE TASK 13: Extend LVM Physical Volume on /dev/sdc3"
+- name: "STORAGE TASK 13: Extend LVM Physical Volume"
   command: pvresize /dev/sdc3
   when: data2_mounted.rc != 0
   tags: ['storage']
 
-- name: "STORAGE TASK 14: Get available space in volume group"
+- name: "STORAGE TASK 14: Get available VG space"
   command: vgs {{ disk_data2_vg }} --noheadings --units g -o vg_free
   register: vg_free_space
   changed_when: false
@@ -134,11 +131,11 @@
 
 - name: Display available VG space
   debug:
-    msg: "Available space in {{ disk_data2_vg }}: {{ vg_free_space.stdout | trim }}"
+    msg: "Available space in VG: {{ vg_free_space.stdout | trim }}"
   when: data2_mounted.rc != 0
   tags: ['storage']
 
-- name: "STORAGE TASK 15: Create logical volume for {{ disk_data2_mount }}"
+- name: "STORAGE TASK 15: Create logical volume for data2"
   community.general.lvol:
     vg: "{{ disk_data2_vg }}"
     lv: "{{ disk_data2_lv_name }}"
@@ -147,21 +144,21 @@
   when: data2_mounted.rc != 0
   tags: ['storage']
 
-- name: "STORAGE TASK 16: Create {{ filesystem_type }} filesystem on LV"
+- name: "STORAGE TASK 16: Create filesystem on LV"
   community.general.filesystem:
     fstype: "{{ filesystem_type }}"
     dev: "/dev/{{ disk_data2_vg }}/{{ disk_data2_lv_name }}"
   when: data2_mounted.rc != 0
   tags: ['storage']
 
-- name: "STORAGE TASK 17: Create {{ disk_data2_mount }} directory"
+- name: "STORAGE TASK 17: Create data2 mount directory"
   file:
     path: "{{ disk_data2_mount }}"
     state: directory
     mode: '0755'
   tags: ['storage']
 
-- name: "STORAGE TASK 18: Mount LV to {{ disk_data2_mount }}"
+- name: "STORAGE TASK 18: Mount LV to data2"
   ansible.posix.mount:
     path: "{{ disk_data2_mount }}"
     src: "/dev/{{ disk_data2_vg }}/{{ disk_data2_lv_name }}"
@@ -186,7 +183,7 @@
     msg: "{{ df_output.stdout_lines }}"
   tags: ['storage', 'verify']
 
-- name: "STORAGE TASK 20: Set correct permissions on mount points"
+- name: "STORAGE TASK 20: Set permissions on mount points"
   file:
     path: "{{ item }}"
     state: directory
