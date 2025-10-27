@@ -17,8 +17,7 @@
 @load frameworks/files/extract-all-files
 
 # Load JA4+ fingerprinting
-# Installed via zkg - should auto-load
-@load packages/ja4
+@load packages
 
 # Network configuration
 redef Site::local_nets += {
@@ -30,5 +29,5 @@ redef Site::local_nets += {
 # Logging configuration
 redef LogAscii::use_json = T;
 
-# Configure extraction limits
-redef FileExtract::extraction_limit = 10MB;
+# Configure extraction limits (10MB in bytes)
+redef FileExtract::extraction_limit = 10485760;
