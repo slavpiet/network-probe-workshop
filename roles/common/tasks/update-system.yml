@@ -1,0 +1,42 @@
+---
+- name: "TASK 1: Update apt package cache"
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  register: apt_update
+  tags: ['update']
+
+- name: Display apt update result
+  debug:
+    msg: "APT cache updated successfully"
+  when: apt_update is changed
+  tags: ['update']
+
+- name: "TASK 2: Install prerequisite packages"
+  apt:
+    name: "{{ prerequisite_packages }}"
+    state: present
+    update_cache: yes
+  register: prereq_install
+  tags: ['packages']
+
+- name: Display installed packages
+  debug:
+    msg: "Installed: {{ prerequisite_packages | join(', ') }}"
+  when: prereq_install is changed
+  tags: ['packages']
+
+- name: "TASK 3: Upgrade all packages to latest version"
+  apt:
+    upgrade: dist
+    autoremove: yes
+    autoclean: yes
+  register: system_upgrade
+  tags: ['upgrade']
+
+- name: Display upgrade summary
+  debug:
+    msg:
+      - "System upgrade completed"
+      - "Changed: {{ system_upgrade is changed }}"
+  tags: ['upgrade']
