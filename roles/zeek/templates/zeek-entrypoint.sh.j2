@@ -1,27 +1,21 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-echo "Checking JA4+ installation..."
+echo "Installing JA4+..."
 if [ ! -d "/usr/local/zeek/share/zeek/site/packages/ja4" ]; then
     apt-get update -qq && apt-get install -y -qq git ca-certificates 2>&1 | grep -v "debconf"
     zkg install --force https://github.com/FoxIO-LLC/ja4
-    echo "JA4+ installed successfully!"
+    echo "JA4+ installed"
 else
     echo "JA4+ already installed"
 fi
 
-echo "Starting Zeek..."
-zeekctl deploy
+echo "Starting Zeek directly on interface {{ capture_interface }}..."
+mkdir -p /opt/zeek/logs
+cd /opt/zeek/logs
 
-sleep 5
-zeekctl status
-
-echo "Creating log symlink structure in /zeek-logs..."
-mkdir -p /zeek-logs
-ln -sf /usr/local/zeek/spool/zeek /zeek-logs/current
-
-# Copy logs periodically
-while true; do
-    rsync -a --delete /usr/local/zeek/spool/zeek/ /zeek-logs/current/ 2>/dev/null || true
-    sleep 60
-done
+# Run zeek directly - no zeekctl!
+exec zeek -C -i {{ capture_interface }} \
+    LogAscii::use_json=T \
+    /usr/local/zeek/share/zeek/site/local.zeek \
+    packages
