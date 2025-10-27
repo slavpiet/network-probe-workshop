@@ -194,4 +194,7 @@
     owner: root
     group: root
   loop:
-    - "{{ disk_data1_
+    - "{{ disk_data1_mount }}"
+    - "{{ disk_data2_mount }}"
+    - "{{ disk_data3_mount }}"
+  tags: ['storage']
