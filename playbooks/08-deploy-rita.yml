@@ -1,0 +1,37 @@
+---
+- name: "Step 8: Deploy RITA Threat Analysis"
+  hosts: all
+  become: yes
+  tags:
+    - rita
+    - threat-intel
+
+  tasks:
+    - name: Display RITA deployment phase
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 8: RITA DEPLOYMENT"
+          - "=========================================="
+          - "Version: {{ rita_version }}"
+          - "Analyzes Zeek logs for threats"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Include rita role
+      include_role:
+        name: rita
+      tags: ['rt']
+
+    - name: Display RITA information
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 8: COMPLETED"
+          - "=========================================="
+          - "RITA is deployed!"
+          - "Config: {{ base_directory }}/rita/config.yaml"
+          - "Docker Compose: {{ base_directory }}/rita/docker-compose.yml"
+          - "Run analysis: docker exec -it rita rita import"
+          - "=========================================="
+      tags: ['always']
