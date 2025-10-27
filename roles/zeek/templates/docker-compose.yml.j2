@@ -8,7 +8,7 @@ services:
       - NET_RAW
     entrypoint: /opt/zeek-entrypoint.sh
     volumes:
-      - {{ zeek_log_path }}:/usr/local/zeek/spool/standalone
+      - {{ zeek_log_path }}:/usr/local/zeek/spool
       - {{ base_directory }}/zeek/scripts/local.zeek:/usr/local/zeek/share/zeek/site/local.zeek:ro
       - {{ base_directory }}/zeek/zeekctl.cfg:/usr/local/zeek/etc/zeekctl.cfg:ro
       - {{ base_directory }}/zeek/node.cfg:/usr/local/zeek/etc/node.cfg:ro
