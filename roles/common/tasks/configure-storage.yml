@@ -1,4 +1,3 @@
-cat > roles/common/tasks/configure-storage.yml << 'EOF'
 ---
 - name: "STORAGE TASK 1: Display disk configuration plan"
   debug:
@@ -195,8 +194,4 @@ cat > roles/common/tasks/configure-storage.yml << 'EOF'
     owner: root
     group: root
   loop:
-    - "{{ disk_data1_mount }}"
-    - "{{ disk_data2_mount }}"
-    - "{{ disk_data3_mount }}"
-  tags: ['storage']
-EOF
+    - "{{ disk_data1_
