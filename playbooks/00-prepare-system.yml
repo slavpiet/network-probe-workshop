@@ -2,63 +2,49 @@
 - name: "Step 0: Prepare System for Network Sensor Stack"
   hosts: all
   become: yes
-  tags:
-    - prepare
-    - system
-
+  
+  vars:
+    # Storage variables defined HERE so they're always available
+    disk_data1_device: "/dev/sdb"
+    disk_data1_mount: "/data1"
+    disk_data2_lv_name: "data2-lv"
+    disk_data2_mount: "/data2"
+    disk_data2_vg: "ubuntu-vg"
+    disk_data3_device: "/dev/sda"
+    disk_data3_mount: "/data3"
+    filesystem_type: "ext4"
+    base_directory: "/opt/network-sensors"
+    elasticsearch_data_path: "/data1/elasticsearch"
+    mongodb_data_path: "/data1/mongodb"
+    logs_directory: "/data2/logs"
+    arkime_pcap_path: "/data3/pcap"
+  
   tasks:
-    - name: Display preparation phase information
+    - name: Display preparation phase
       debug:
-        msg:
-          - "=========================================="
-          - "PHASE 0: SYSTEM PREPARATION"
-          - "=========================================="
-          - "This playbook will:"
-          - "  1. Update system packages"
-          - "  2. Install prerequisite packages"
-          - "  3. Install Docker CE from official repository"
-          - "  4. Configure Docker for ansible user"
-          - "  5. Setup disk partitions and filesystems:"
-          - "     - /dev/sda -> /data3 (Arkime PCAPs)"
-          - "     - /dev/sdb -> /data1 (Elasticsearch)"
-          - "     - Extend LVM -> /data2 (Logs)"
-          - "  6. Create directory structure"
-          - "=========================================="
-          - "Network Mode: host (for direct interface access)"
-          - "WARNING: This will format disks!"
-          - "=========================================="
+        msg: "Starting Phase 0"
       tags: ['always']
 
-    - name: Pause for confirmation
-      pause:
-        prompt: "Press ENTER to continue or Ctrl+C to abort"
-      tags: ['always']
+    - name: Update system
+      import_role:
+        name: common
+        tasks_from: update-system
+      tags: ['update']
 
-- name: Execute system preparation
-  hosts: all
-  become: yes
-  roles:
-    - role: common
-      tags: ['common', 'update', 'docker', 'storage', 'directories']
+    - name: Install Docker
+      import_role:
+        name: common
+        tasks_from: install-docker
+      tags: ['docker']
 
-- name: Display completion summary
-  hosts: all
-  become: yes
-  tasks:
-    - name: Display completion summary
-      debug:
-        msg:
-          - "=========================================="
-          - "PHASE 0: COMPLETED"
-          - "=========================================="
-          - "Docker Version: installed"
-          - "Network Mode: host"
-          - "Storage Mounts:"
-          - "  /data1 -> Elasticsearch"
-          - "  /data2 -> Logs (LVM)"
-          - "  /data3 -> Arkime PCAPs"
-          - "Base directory: {{ base_directory }}"
-          - "=========================================="
-          - "Next: Run playbook 01-generate-certs.yml"
-          - "=========================================="
-      tags: ['always']
+    - name: Configure storage
+      import_role:
+        name: common
+        tasks_from: configure-storage
+      tags: ['storage']
+
+    - name: Create directories
+      import_role:
+        name: common
+        tasks_from: create-directories
+      tags: ['directories']
