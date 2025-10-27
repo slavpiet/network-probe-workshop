@@ -1,0 +1,5 @@
+---
+- name: restart kibana
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/kibana"
+    state: restarted
