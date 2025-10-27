@@ -37,7 +37,7 @@ server_timezone: "UTC"
 
 # Docker Configuration
 docker_compose_version: "2.24.0"
-docker_network_mode: "host"  # Use host network for direct interface access
+docker_network_mode: "host"
 
 # ===========================================
 # ELASTICSEARCH CONFIGURATION
@@ -45,10 +45,9 @@ docker_network_mode: "host"  # Use host network for direct interface access
 elasticsearch_version: "9.0.0"
 elasticsearch_http_port: 9200
 elasticsearch_transport_port: 9300
-elasticsearch_heap_size: "32g"
+elasticsearch_heap_size: "4g"
 elasticsearch_password: "ChangeMe123!"
-elasticsearch_data_path: "{{ data_directory }}/elasticsearch"
-elasticsearch_ip: "172.25.0.10"
+elasticsearch_data_path: "{{ disk_data1_mount }}/elasticsearch"
 
 # ===========================================
 # KIBANA CONFIGURATION
@@ -77,7 +76,7 @@ zeek_version: "8.0.1"
 # ===========================================
 # ARKIME CONFIGURATION
 # ===========================================
-arkime_version: "5.7.1"
+arkime_version: "v5.7.1"
 arkime_port: 8005
 arkime_password: "ChangeMe123!"
 
@@ -85,6 +84,13 @@ arkime_password: "ChangeMe123!"
 # RITA CONFIGURATION
 # ===========================================
 rita_version: "4.8.0"
+
+# ===========================================
+# MONGODB CONFIGURATION (for RITA)
+# ===========================================
+mongodb_version: "6.0"
+mongodb_port: 27017
+mongodb_data_path: "{{ disk_data1_mount }}/mongodb"
 
 # ===========================================
 # SSL/TLS CONFIGURATION
