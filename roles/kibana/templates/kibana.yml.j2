@@ -1,0 +1,30 @@
+# Kibana 9.0 Configuration
+
+# Server
+server.name: {{ server_hostname }}
+server.host: "0.0.0.0"
+server.port: {{ kibana_port }}
+
+# Elasticsearch connection
+elasticsearch.hosts: ["https://localhost:{{ elasticsearch_http_port }}"]
+elasticsearch.username: "elastic"
+elasticsearch.password: "{{ elasticsearch_password }}"
+elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certs/ca.crt"]
+elasticsearch.ssl.verificationMode: certificate
+
+# Kibana server SSL (disabled for simplicity - accessing via localhost)
+server.ssl.enabled: false
+
+# Monitoring
+monitoring.ui.enabled: true
+monitoring.kibana.collection.enabled: true
+
+# Security
+xpack.security.enabled: true
+xpack.encryptedSavedObjects.encryptionKey: "min32characterslongencryptionkey123456"
+xpack.security.encryptionKey: "min32characterslongencryptionkey123456"
+xpack.reporting.encryptionKey: "min32characterslongencryptionkey123456"
+
+# Telemetry
+telemetry.enabled: false
+telemetry.optIn: false
