@@ -8,10 +8,11 @@ services:
     environment:
       - ARKIME_HEAP=1024m
       - ARKIME_PCAP_PATH={{ arkime_pcap_path }}
+      - ARKIME_ELASTICSEARCH={{ arkime_elasticsearch_url }}
       - ARKIME_VIEWER_PORT={{ arkime_port }}
     volumes:
       - {{ arkime_pcap_path }}:{{ arkime_pcap_path }}
-      - {{ arkime_config_dir }}:/arkime/etc
+      - {{ base_directory }}/arkime/config:/arkime/etc
       - {{ base_directory }}/arkime/logs:/arkime/logs
     cap_add:
       - NET_ADMIN
