@@ -1,0 +1,42 @@
+---
+- name: "Step 1: Generate SSL/TLS Certificates"
+  hosts: all
+  become: yes
+  tags:
+    - certificates
+    - ssl
+
+  tasks:
+    - name: Display certificate generation phase
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 1: CERTIFICATE GENERATION"
+          - "=========================================="
+          - "Generating self-signed certificates for:"
+          - "  - Elasticsearch (HTTPS)"
+          - "  - Kibana (HTTPS)"
+          - "Validity: {{ cert_validity_days }} days"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Include certificates role
+      include_role:
+        name: certificates
+      tags: ['certs']
+
+    - name: Display certificate locations
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 1: COMPLETED"
+          - "=========================================="
+          - "Certificates stored in: {{ cert_directory }}"
+          - "Files created:"
+          - "  - ca.crt (Certificate Authority)"
+          - "  - elasticsearch.crt"
+          - "  - elasticsearch.key"
+          - "  - kibana.crt"
+          - "  - kibana.key"
+          - "=========================================="
+      tags: ['always']
