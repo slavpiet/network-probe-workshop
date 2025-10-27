@@ -1,9 +1,12 @@
 ---
-- name: "ES TASK 1: Create Elasticsearch configuration directory"
+- name: "ES TASK 1: Create Elasticsearch configuration directories"
   file:
-    path: "{{ base_directory }}/elasticsearch/config"
+    path: "{{ item }}"
     state: directory
     mode: '0755'
+  loop:
+    - "{{ base_directory }}/elasticsearch/config"
+    - "{{ base_directory }}/elasticsearch/config/certs"
   tags: ['elasticsearch', 'config']
 
 - name: "ES TASK 2: Ensure Elasticsearch data directory exists with correct permissions"
@@ -15,17 +18,10 @@
     group: "1000"
   tags: ['elasticsearch', 'storage']
 
-- name: "ES TASK 3: Deploy Elasticsearch configuration file"
-  template:
-    src: elasticsearch.yml.j2
-    dest: "{{ base_directory }}/elasticsearch/config/elasticsearch.yml"
-    mode: '0644'
-  tags: ['elasticsearch', 'config']
-
-- name: "ES TASK 4: Copy SSL certificates to Elasticsearch directory"
+- name: "ES TASK 3: Copy SSL certificates to Elasticsearch certs directory"
   copy:
     src: "{{ cert_directory }}/{{ item }}"
-    dest: "{{ base_directory }}/elasticsearch/config/{{ item }}"
+    dest: "{{ base_directory }}/elasticsearch/config/certs/{{ item }}"
     remote_src: yes
     mode: '0644'
   loop:
@@ -34,14 +30,14 @@
     - elasticsearch-key.pem
   tags: ['elasticsearch', 'certs']
 
-- name: "ES TASK 5: Deploy Elasticsearch docker-compose.yml"
+- name: "ES TASK 4: Deploy Elasticsearch docker-compose.yml"
   template:
     src: docker-compose.yml.j2
     dest: "{{ base_directory }}/elasticsearch/docker-compose.yml"
     mode: '0644'
   tags: ['elasticsearch', 'docker']
 
-- name: "ES TASK 6: Start Elasticsearch container"
+- name: "ES TASK 5: Start Elasticsearch container"
   community.docker.docker_compose_v2:
     project_src: "{{ base_directory }}/elasticsearch"
     state: present
@@ -54,7 +50,7 @@
   when: elasticsearch_deploy is changed
   tags: ['elasticsearch']
 
-- name: "ES TASK 7: Wait for Elasticsearch to be healthy"
+- name: "ES TASK 6: Wait for Elasticsearch to be healthy"
   uri:
     url: "https://localhost:{{ elasticsearch_http_port }}/_cluster/health"
     method: GET
