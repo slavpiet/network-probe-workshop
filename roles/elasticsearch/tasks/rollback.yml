@@ -1,0 +1,28 @@
+- name: "ROLLBACK ES 1: Stop Elasticsearch container"
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/elasticsearch"
+    state: absent
+  tags: ['rollback']
+
+- name: "ROLLBACK ES 2: Remove Elasticsearch directory"
+  file:
+    path: "{{ base_directory }}/elasticsearch"
+    state: absent
+  tags: ['rollback']
+
+- name: "ROLLBACK ES 3: Remove Elasticsearch data (optional - commented out for safety)"
+  debug:
+    msg: "Elasticsearch data preserved at {{ elasticsearch_data_path }}"
+  tags: ['rollback']
+
+# Uncomment below to COMPLETELY wipe data
+# - name: "ROLLBACK ES 3: Remove Elasticsearch data"
+#   file:
+#     path: "{{ elasticsearch_data_path }}"
+#     state: absent
+#   tags: ['rollback']
+
+- name: Display rollback status
+  debug:
+    msg: "Elasticsearch removed. Data preserved at {{ elasticsearch_data_path }}"
+  tags: ['rollback']
