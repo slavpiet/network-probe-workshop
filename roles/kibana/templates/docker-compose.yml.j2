@@ -18,15 +18,8 @@ services:
     volumes:
       - {{ base_directory }}/kibana/config:/usr/share/kibana/config:ro
     restart: unless-stopped
-    depends_on:
-      - elasticsearch
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
-
-networks:
-  default:
-    external: true
-    name: host
