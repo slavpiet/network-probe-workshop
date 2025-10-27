@@ -2,10 +2,17 @@
 - name: "Step 3: Deploy Kibana"
   hosts: all
   become: yes
-  tags:
-    - kibana
-    - elk
-
+  
+  vars:
+    # Kibana variables
+    base_directory: "/opt/network-sensors"
+    cert_directory: "{{ base_directory }}/certificates"
+    kibana_version: "9.0.0"
+    kibana_port: 5601
+    elasticsearch_http_port: 9200
+    elasticsearch_password: "ChangeMe123!"
+    server_hostname: "sensor-node-01"
+  
   tasks:
     - name: Display Kibana deployment phase
       debug:
@@ -15,12 +22,12 @@
           - "=========================================="
           - "Version: {{ kibana_version }}"
           - "Port: {{ kibana_port }}"
-          - "Connecting to Elasticsearch: {{ elasticsearch_ip }}"
+          - "Connecting to Elasticsearch: localhost:{{ elasticsearch_http_port }}"
           - "=========================================="
       tags: ['always']
 
     - name: Include kibana role
-      include_role:
+      import_role:
         name: kibana
       tags: ['kb']
 
@@ -41,7 +48,13 @@
           - "=========================================="
           - "Kibana is running!"
           - "URL: http://localhost:{{ kibana_port }}"
-          - "Login with Elasticsearch credentials"
+          - "Username: elastic"
+          - "Password: {{ elasticsearch_password }}"
+          - ""
           - "Docker Compose: {{ base_directory }}/kibana/docker-compose.yml"
+          - ""
+          - "Access Kibana from browser (use SSH tunnel if remote):"
+          - "  ssh -L {{ kibana_port }}:localhost:{{ kibana_port }} user@sensor-server"
+          - "  Then open: http://localhost:{{ kibana_port }}"
           - "=========================================="
       tags: ['always']
