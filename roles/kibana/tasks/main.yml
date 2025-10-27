@@ -1,0 +1,66 @@
+---
+- name: "KIBANA TASK 1: Create Kibana configuration directories"
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ base_directory }}/kibana/config"
+    - "{{ base_directory }}/kibana/config/certs"
+  tags: ['kibana', 'config']
+
+- name: "KIBANA TASK 2: Copy SSL certificates to Kibana directory"
+  copy:
+    src: "{{ cert_directory }}/{{ item }}"
+    dest: "{{ base_directory }}/kibana/config/certs/{{ item }}"
+    remote_src: yes
+    mode: '0644'
+  loop:
+    - ca.crt
+    - kibana.crt
+    - kibana-key.pem
+    - elasticsearch.crt
+  tags: ['kibana', 'certs']
+
+- name: "KIBANA TASK 3: Deploy Kibana configuration file"
+  template:
+    src: kibana.yml.j2
+    dest: "{{ base_directory }}/kibana/config/kibana.yml"
+    mode: '0644'
+  tags: ['kibana', 'config']
+
+- name: "KIBANA TASK 4: Deploy Kibana docker-compose.yml"
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ base_directory }}/kibana/docker-compose.yml"
+    mode: '0644'
+  tags: ['kibana', 'docker']
+
+- name: "KIBANA TASK 5: Start Kibana container"
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/kibana"
+    state: present
+  register: kibana_deploy
+  tags: ['kibana', 'deploy']
+
+- name: Display Kibana deployment status
+  debug:
+    msg: "Kibana container deployed"
+  when: kibana_deploy is changed
+  tags: ['kibana']
+
+- name: "KIBANA TASK 6: Wait for Kibana to be healthy"
+  uri:
+    url: "http://localhost:{{ kibana_port }}/api/status"
+    method: GET
+    status_code: 200
+  register: kibana_health
+  until: kibana_health.status == 200
+  retries: 30
+  delay: 10
+  tags: ['kibana', 'verify']
+
+- name: Display Kibana health status
+  debug:
+    msg: "Kibana is healthy and ready"
+  tags: ['kibana', 'verify']
