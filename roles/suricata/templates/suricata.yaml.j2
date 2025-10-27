@@ -33,6 +33,19 @@ vars:
     VXLAN_PORTS: 4789
     TEREDO_PORTS: 3544
 
+# Application layer protocols
+app-layer:
+  protocols:
+    dnp3:
+      enabled: yes
+      detection-enabled: yes
+    modbus:
+      enabled: yes
+      detection-enabled: yes
+    enip:
+      enabled: yes
+      detection-enabled: yes
+
 # Logging
 outputs:
   - fast:
