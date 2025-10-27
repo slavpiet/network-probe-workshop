@@ -1,0 +1,49 @@
+---
+- name: "Step 2: Deploy Elasticsearch"
+  hosts: all
+  become: yes
+  tags:
+    - elasticsearch
+    - elk
+
+  tasks:
+    - name: Display Elasticsearch deployment phase
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 2: ELASTICSEARCH DEPLOYMENT"
+          - "=========================================="
+          - "Version: {{ elasticsearch_version }}"
+          - "HTTP Port: {{ elasticsearch_http_port }}"
+          - "Heap Size: {{ elasticsearch_heap_size }}"
+          - "Data Path: {{ elasticsearch_data_path }}"
+          - "=========================================="
+      tags: ['always']
+
+    - name: Include elasticsearch role
+      include_role:
+        name: elasticsearch
+      tags: ['es']
+
+    - name: Wait for Elasticsearch to be ready
+      wait_for:
+        host: localhost
+        port: "{{ elasticsearch_http_port }}"
+        delay: 10
+        timeout: 300
+        msg: "Elasticsearch did not start in time"
+      tags: ['es', 'verify']
+
+    - name: Display Elasticsearch access information
+      debug:
+        msg:
+          - "=========================================="
+          - "PHASE 2: COMPLETED"
+          - "=========================================="
+          - "Elasticsearch is running!"
+          - "URL: https://localhost:{{ elasticsearch_http_port }}"
+          - "Username: elastic"
+          - "Password: {{ elasticsearch_password }}"
+          - "Docker Compose: {{ base_directory }}/elasticsearch/docker-compose.yml"
+          - "=========================================="
+      tags: ['always']
