@@ -1,0 +1,8 @@
+---
+kibana_version: "9.0.0"
+kibana_port: 5601
+elasticsearch_http_port: 9200
+elasticsearch_password: "ChangeMe123!"
+base_directory: "/opt/network-sensors"
+cert_directory: "{{ base_directory }}/certificates"
+server_hostname: "sensor-node-01"
