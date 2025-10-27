@@ -1,0 +1,79 @@
+---
+- name: "ZEEK TASK 1: Create Zeek directories"
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ base_directory }}/zeek"
+    - "{{ base_directory }}/zeek/scripts"
+    - "{{ zeek_log_path }}"
+  tags: ['zeek', 'config']
+
+- name: "ZEEK TASK 2: Deploy Zeek local.zeek script"
+  template:
+    src: local.zeek.j2
+    dest: "{{ base_directory }}/zeek/scripts/local.zeek"
+    mode: '0644'
+  tags: ['zeek', 'config']
+
+- name: "ZEEK TASK 3: Deploy Zeek docker-compose.yml"
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ base_directory }}/zeek/docker-compose.yml"
+    mode: '0644'
+  tags: ['zeek', 'docker']
+
+- name: "ZEEK TASK 4: Start Zeek container"
+  community.docker.docker_compose_v2:
+    project_src: "{{ base_directory }}/zeek"
+    state: present
+  register: zeek_deploy
+  tags: ['zeek', 'deploy']
+
+- name: Display Zeek deployment status
+  debug:
+    msg: "Zeek container deployed and capturing on {{ capture_interface }}"
+  when: zeek_deploy is changed
+  tags: ['zeek']
+
+- name: "ZEEK TASK 5: Wait for Zeek to start logging"
+  wait_for:
+    path: "{{ zeek_log_path }}/current/conn.log"
+    timeout: 60
+  tags: ['zeek', 'verify']
+
+- name: "ZEEK TASK 6: Verify Zeek is running"
+  command: docker ps --filter name=zeek --format "{{ '{{' }}.Status{{ '}}' }}"
+  register: zeek_status
+  changed_when: false
+  tags: ['zeek', 'verify']
+
+- name: Display Zeek status
+  debug:
+    msg: "Zeek status: {{ zeek_status.stdout }}"
+  tags: ['zeek', 'verify']
+EOF
+
+# Create Docker Compose template
+cat > roles/zeek/templates/docker-compose.yml.j2 << 'EOF'
+services:
+  zeek:
+    image: zeek/zeek:{{ zeek_version }}
+    container_name: zeek
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      - ZEEK_INTERFACE={{ capture_interface }}
+    command: zeekctl deploy
+    volumes:
+      - {{ zeek_log_path }}:/usr/local/zeek/logs
+      - {{ base_directory }}/zeek/scripts:/usr/local/zeek/share/zeek/site:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "zeekctl status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
