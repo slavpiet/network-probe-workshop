@@ -7,7 +7,7 @@ server.port: {{ kibana_port }}
 
 # Elasticsearch connection
 elasticsearch.hosts: ["https://localhost:{{ elasticsearch_http_port }}"]
-elasticsearch.username: "elastic"
+elasticsearch.username: "kibana_system"
 elasticsearch.password: "{{ elasticsearch_password }}"
 elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certs/ca.crt"]
 elasticsearch.ssl.verificationMode: certificate
