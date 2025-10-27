@@ -39,12 +39,10 @@
   tags: ['rollback']
 
 - name: "ROLLBACK 3: Remove ansible user from docker group"
-  user:
-    name: "{{ ansible_user }}"
-    groups: docker
-    append: no
+  command: deluser {{ ansible_user }} docker
+  failed_when: false
   tags: ['rollback']
-
+  
 - name: "ROLLBACK 4: Stop Docker service"
   systemd:
     name: docker
