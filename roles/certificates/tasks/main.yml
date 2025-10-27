@@ -1,0 +1,141 @@
+---
+- name: "CERT TASK 1: Install OpenSSL and crypto dependencies"
+  apt:
+    name:
+      - openssl
+      - python3-cryptography
+    state: present
+  tags: ['certs']
+
+- name: "CERT TASK 2: Generate CA private key"
+  community.crypto.openssl_privatekey:
+    path: "{{ cert_directory }}/ca-key.pem"
+    size: 4096
+    mode: '0600'
+  tags: ['certs']
+
+- name: "CERT TASK 3: Generate CA certificate signing request"
+  community.crypto.openssl_csr:
+    path: "{{ cert_directory }}/ca.csr"
+    privatekey_path: "{{ cert_directory }}/ca-key.pem"
+    common_name: "{{ cert_organization }} CA"
+    country_name: "{{ cert_country }}"
+    state_or_province_name: "{{ cert_state }}"
+    locality_name: "{{ cert_locality }}"
+    organization_name: "{{ cert_organization }}"
+    basic_constraints:
+      - "CA:TRUE"
+    basic_constraints_critical: yes
+  tags: ['certs']
+
+- name: "CERT TASK 4: Generate self-signed CA certificate"
+  community.crypto.x509_certificate:
+    path: "{{ cert_directory }}/ca.crt"
+    privatekey_path: "{{ cert_directory }}/ca-key.pem"
+    csr_path: "{{ cert_directory }}/ca.csr"
+    provider: selfsigned
+    selfsigned_not_after: "+{{ cert_validity_days }}d"
+  tags: ['certs']
+
+- name: Display CA certificate info
+  debug:
+    msg: "CA certificate created at {{ cert_directory }}/ca.crt"
+  tags: ['certs']
+
+- name: "CERT TASK 5: Generate Elasticsearch private key"
+  community.crypto.openssl_privatekey:
+    path: "{{ cert_directory }}/elasticsearch-key.pem"
+    size: 2048
+    mode: '0600'
+  tags: ['certs', 'elasticsearch']
+
+- name: "CERT TASK 6: Generate Elasticsearch CSR"
+  community.crypto.openssl_csr:
+    path: "{{ cert_directory }}/elasticsearch.csr"
+    privatekey_path: "{{ cert_directory }}/elasticsearch-key.pem"
+    common_name: "{{ server_hostname }}"
+    country_name: "{{ cert_country }}"
+    state_or_province_name: "{{ cert_state }}"
+    locality_name: "{{ cert_locality }}"
+    organization_name: "{{ cert_organization }}"
+    subject_alt_name:
+      - "DNS:{{ server_hostname }}"
+      - "DNS:{{ server_hostname }}.{{ server_domain }}"
+      - "DNS:localhost"
+      - "IP:127.0.0.1"
+  tags: ['certs', 'elasticsearch']
+
+- name: "CERT TASK 7: Sign Elasticsearch certificate with CA"
+  community.crypto.x509_certificate:
+    path: "{{ cert_directory }}/elasticsearch.crt"
+    csr_path: "{{ cert_directory }}/elasticsearch.csr"
+    ownca_path: "{{ cert_directory }}/ca.crt"
+    ownca_privatekey_path: "{{ cert_directory }}/ca-key.pem"
+    provider: ownca
+    ownca_not_after: "+{{ cert_validity_days }}d"
+  tags: ['certs', 'elasticsearch']
+
+- name: Display Elasticsearch certificate info
+  debug:
+    msg: "Elasticsearch certificate created at {{ cert_directory }}/elasticsearch.crt"
+  tags: ['certs', 'elasticsearch']
+
+- name: "CERT TASK 8: Generate Kibana private key"
+  community.crypto.openssl_privatekey:
+    path: "{{ cert_directory }}/kibana-key.pem"
+    size: 2048
+    mode: '0600'
+  tags: ['certs', 'kibana']
+
+- name: "CERT TASK 9: Generate Kibana CSR"
+  community.crypto.openssl_csr:
+    path: "{{ cert_directory }}/kibana.csr"
+    privatekey_path: "{{ cert_directory }}/kibana-key.pem"
+    common_name: "{{ server_hostname }}"
+    country_name: "{{ cert_country }}"
+    state_or_province_name: "{{ cert_state }}"
+    locality_name: "{{ cert_locality }}"
+    organization_name: "{{ cert_organization }}"
+    subject_alt_name:
+      - "DNS:{{ server_hostname }}"
+      - "DNS:{{ server_hostname }}.{{ server_domain }}"
+      - "DNS:localhost"
+      - "IP:127.0.0.1"
+  tags: ['certs', 'kibana']
+
+- name: "CERT TASK 10: Sign Kibana certificate with CA"
+  community.crypto.x509_certificate:
+    path: "{{ cert_directory }}/kibana.crt"
+    csr_path: "{{ cert_directory }}/kibana.csr"
+    ownca_path: "{{ cert_directory }}/ca.crt"
+    ownca_privatekey_path: "{{ cert_directory }}/ca-key.pem"
+    provider: ownca
+    ownca_not_after: "+{{ cert_validity_days }}d"
+  tags: ['certs', 'kibana']
+
+- name: Display Kibana certificate info
+  debug:
+    msg: "Kibana certificate created at {{ cert_directory }}/kibana.crt"
+  tags: ['certs', 'kibana']
+
+- name: "CERT TASK 11: Set proper permissions on private keys"
+  file:
+    path: "{{ item }}"
+    mode: '0600'
+  loop:
+    - "{{ cert_directory }}/ca-key.pem"
+    - "{{ cert_directory }}/elasticsearch-key.pem"
+    - "{{ cert_directory }}/kibana-key.pem"
+  tags: ['certs']
+
+- name: "CERT TASK 12: List all generated certificates"
+  find:
+    paths: "{{ cert_directory }}"
+    patterns: "*.crt,*.pem"
+  register: cert_files
+  tags: ['certs', 'verify']
+
+- name: Display generated certificates
+  debug:
+    msg: "{{ cert_files.files | map(attribute='path') | list }}"
+  tags: ['certs', 'verify']
