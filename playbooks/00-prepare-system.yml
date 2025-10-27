@@ -15,16 +15,48 @@
           - "=========================================="
           - "This playbook will:"
           - "  1. Update system packages"
-          - "  2. Install Docker and Docker Compose"
-          - "  3. Create directory structure"
-          - "  4. Configure system settings"
+          - "  2. Install prerequisite packages"
+          - "  3. Install Docker CE from official repository"
+          - "  4. Configure Docker for ansible user"
+          - "  5. Setup disk partitions and filesystems:"
+          - "     - /dev/sda → /data3 (Arkime PCAPs)"
+          - "     - /dev/sdb → /data1 (Elasticsearch)"
+          - "     - Extend LVM → /data2 (Logs)"
+          - "  6. Create directory structure"
+          - "=========================================="
+          - "Network Mode: host (for direct interface access)"
+          - "WARNING: This will format disks!"
           - "=========================================="
       tags: ['always']
 
-    - name: Include common role
+    - name: Pause for confirmation
+      pause:
+        prompt: "Press ENTER to continue or Ctrl+C to abort"
+      tags: ['always']
+
+    - name: Update system packages
       include_role:
         name: common
-      tags: ['common']
+        tasks_from: update-system
+      tags: ['update', 'packages']
+
+    - name: Install Docker
+      include_role:
+        name: common
+        tasks_from: install-docker
+      tags: ['docker']
+
+    - name: Configure storage
+      include_role:
+        name: common
+        tasks_from: configure-storage
+      tags: ['storage', 'disks']
+
+    - name: Create directory structure
+      include_role:
+        name: common
+        tasks_from: create-directories
+      tags: ['directories']
 
     - name: Display completion summary
       debug:
@@ -32,8 +64,14 @@
           - "=========================================="
           - "PHASE 0: COMPLETED"
           - "=========================================="
+          - "Docker Version: {{ docker_version_output.stdout | default('installed') }}"
+          - "Network Mode: host"
+          - "Storage Mounts:"
+          - "  /data1 → Elasticsearch ({{ disk_data1_device }})"
+          - "  /data2 → Logs (LVM)"
+          - "  /data3 → Arkime PCAPs ({{ disk_data3_device }})"
           - "Base directory: {{ base_directory }}"
-          - "Data directory: {{ data_directory }}"
-          - "Docker network: {{ docker_network_name }}"
+          - "=========================================="
+          - "Next: Run playbook 01-generate-certs.yml"
           - "=========================================="
       tags: ['always']
