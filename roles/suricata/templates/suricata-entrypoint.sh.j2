@@ -1,0 +1,12 @@
+#!/bin/bash
+set -euo pipefail
+
+echo "Updating Suricata rules..."
+suricata-update || echo "Rule update failed, continuing..."
+
+echo "Starting Suricata on interface {{ capture_interface }}..."
+exec suricata -c /etc/suricata/suricata.yaml \
+    -i {{ capture_interface }} \
+    -l /var/log/suricata \
+    --init-errors-fatal \
+    -v
