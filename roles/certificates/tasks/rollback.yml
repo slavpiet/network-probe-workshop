@@ -1,0 +1,11 @@
+---
+- name: "ROLLBACK CERTS: Remove certificates directory"
+  file:
+    path: "{{ cert_directory }}"
+    state: absent
+  tags: ['rollback']
+
+- name: Display rollback status
+  debug:
+    msg: "All certificates removed from {{ cert_directory }}"
+  tags: ['rollback']
