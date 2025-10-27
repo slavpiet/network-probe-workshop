@@ -7,11 +7,13 @@ services:
       - SERVER_NAME={{ server_hostname }}
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT={{ kibana_port }}
+      - SERVER_SSL_ENABLED=true
+      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/kibana.crt
+      - SERVER_SSL_KEY=/usr/share/kibana/config/certs/kibana-key.pem
       - ELASTICSEARCH_HOSTS=https://localhost:{{ elasticsearch_http_port }}
       - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD={{ elasticsearch_password }}
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/usr/share/kibana/config/certs/ca.crt
-      - SERVER_SSL_ENABLED=false
       - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=min32characterslongencryptionkey123456
       - XPACK_SECURITY_ENCRYPTIONKEY=min32characterslongencryptionkey123456
       - XPACK_REPORTING_ENCRYPTIONKEY=min32characterslongencryptionkey123456
@@ -19,7 +21,7 @@ services:
       - {{ base_directory }}/kibana/config:/usr/share/kibana/config:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      test: ["CMD-SHELL", "curl -k -f https://localhost:5601/api/status || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
