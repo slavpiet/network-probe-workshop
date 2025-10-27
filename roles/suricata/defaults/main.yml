@@ -1,0 +1,7 @@
+---
+suricata_version: "8.0.1"
+capture_interface: "eno4"
+base_directory: "/opt/network-sensors"
+logs_directory: "/data2/logs"
+suricata_log_path: "{{ logs_directory }}/suricata"
+suricata_home_net: "192.168.0.0/16"
