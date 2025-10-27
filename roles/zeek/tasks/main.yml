@@ -7,6 +7,7 @@
   loop:
     - "{{ base_directory }}/zeek"
     - "{{ base_directory }}/zeek/scripts"
+    - "{{ base_directory }}/zeek/packages"
     - "{{ zeek_log_path }}"
   tags: ['zeek', 'config']
 
@@ -44,22 +45,33 @@
   when: zeek_deploy is changed
   tags: ['zeek']
 
-- name: "ZEEK TASK 6: Wait for Zeek to start logging"
+- name: "ZEEK TASK 6: Wait for Zeek to initialize (JA4+ installation takes time)"
+  pause:
+    seconds: 60
+  tags: ['zeek', 'verify']
+
+- name: "ZEEK TASK 7: Wait for Zeek to start logging"
   wait_for:
     path: "{{ zeek_log_path }}/current/conn.log"
     timeout: 120
   tags: ['zeek', 'verify']
 
-- name: "ZEEK TASK 7: Verify Zeek is running"
+- name: "ZEEK TASK 8: Verify Zeek is running"
   command: docker ps --filter name=zeek --format "{{ '{{' }}.Status{{ '}}' }}"
   register: zeek_status
   changed_when: false
+  tags: ['zeek', 'verify']
+
+- name: "ZEEK TASK 9: Check if JA4+ was installed"
+  stat:
+    path: "{{ base_directory }}/zeek/packages/ja4"
+  register: ja4_installed
   tags: ['zeek', 'verify']
 
 - name: Display Zeek status
   debug:
     msg: 
       - "Zeek status: {{ zeek_status.stdout }}"
-      - "JA4+ fingerprinting enabled!"
+      - "JA4+ installed: {{ ja4_installed.stat.exists }}"
       - "Check for JA4 logs in: {{ zeek_log_path }}/current/ja4*.log"
   tags: ['zeek', 'verify']
