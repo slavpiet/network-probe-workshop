@@ -8,7 +8,7 @@ services:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT={{ kibana_port }}
       - ELASTICSEARCH_HOSTS=https://localhost:{{ elasticsearch_http_port }}
-      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD={{ elasticsearch_password }}
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/usr/share/kibana/config/certs/ca.crt
       - SERVER_SSL_ENABLED=false
