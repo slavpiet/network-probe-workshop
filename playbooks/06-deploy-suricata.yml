@@ -1,38 +1,43 @@
 ---
-- name: "Step 5: Deploy Suricata IDS"
+- name: "Step 6: Deploy Suricata IDS"
   hosts: all
   become: yes
-  tags:
-    - suricata
-    - ids
-
+  
+  vars:
+    base_directory: "/opt/network-sensors"
+    logs_directory: "/data2/logs"
+    suricata_log_path: "{{ logs_directory }}/suricata"
+    suricata_version: "8.0.1"
+    capture_interface: "eno4"
+    suricata_home_net: "192.168.0.0/16"
+  
   tasks:
-    - name: Display Suricata deployment phase
+    - name: Display deployment phase
       debug:
         msg:
           - "=========================================="
-          - "PHASE 5: SURICATA DEPLOYMENT"
+          - "PHASE 6: SURICATA DEPLOYMENT"
           - "=========================================="
           - "Version: {{ suricata_version }}"
-          - "Capture Interface: {{ capture_interface }}"
+          - "Interface: {{ capture_interface }}"
           - "Home Network: {{ suricata_home_net }}"
           - "=========================================="
       tags: ['always']
 
-    - name: Include suricata role
-      include_role:
+    - name: Deploy Suricata
+      import_role:
         name: suricata
-      tags: ['sur']
+      tags: ['suricata']
 
-    - name: Display Suricata information
+    - name: Display completion
       debug:
         msg:
           - "=========================================="
-          - "PHASE 5: COMPLETED"
+          - "PHASE 6: COMPLETED"
           - "=========================================="
           - "Suricata is running!"
-          - "Monitoring interface: {{ capture_interface }}"
-          - "Logs: {{ logs_directory }}/suricata/"
-          - "Docker Compose: {{ base_directory }}/suricata/docker-compose.yml"
+          - "Logs: {{ suricata_log_path }}/"
+          - "View alerts: tail -f {{ suricata_log_path }}/fast.log"
+          - "View EVE: tail -f {{ suricata_log_path }}/eve.json"
           - "=========================================="
       tags: ['always']
