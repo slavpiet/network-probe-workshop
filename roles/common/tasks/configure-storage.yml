@@ -39,7 +39,7 @@
   community.general.filesystem:
     fstype: "{{ filesystem_type }}"
     dev: "{{ disk_data1_device }}1"
-    force: no
+    force: yes
   when: data1_mounted.rc != 0
   tags: ['storage']
 
@@ -85,7 +85,7 @@
   community.general.filesystem:
     fstype: "{{ filesystem_type }}"
     dev: "{{ disk_data3_device }}1"
-    force: no
+    force: yes
   when: data3_mounted.rc != 0
   tags: ['storage']
 
@@ -148,6 +148,7 @@
   community.general.filesystem:
     fstype: "{{ filesystem_type }}"
     dev: "/dev/{{ disk_data2_vg }}/{{ disk_data2_lv_name }}"
+    force: yes
   when: data2_mounted.rc != 0
   tags: ['storage']
 
