@@ -1,7 +1,24 @@
 ---
-arkime_version: "{{ arkime_version | default('v5.7.1') }}"
-arkime_port: "{{ arkime_port | default(8005) }}"
-arkime_password: "{{ arkime_password | default('ChangeMe123!') }}"
-arkime_pcap_path: "{{ arkime_pcap_path | default('/data3/pcap') }}"
-arkime_elasticsearch_url: "{{ arkime_elasticsearch_url | default('https://localhost:9200') }}"
+# Arkime Configuration
+# Zgodnie z oficjalną dokumentacją
+arkime_docker_version: "ghcr.io/arkime/arkime/arkime:v5-latest"
+arkime_port: 8005
+arkime_password: "ChangeMe123!"
+arkime_pcap_path: "/data3/pcap"
+arkime_pcap_retention_days: 30
+
+# Elasticsearch connection
+arkime_elasticsearch_url: "https://localhost:9200"
+arkime_elastic_user: "elastic"
+arkime_elastic_password: "{{ elasticsearch_password | default('ChangeMe123!') }}"
+
+# Directories
+base_directory: "/opt/network-sensors"
+cert_directory: "{{ base_directory }}/certificates"
+arkime_config_dir: "{{ base_directory }}/arkime/config"
+
+# Interface
+capture_interface: "eno4"
+
+# Auto-create admin user
 arkime_auto_create_admin: true

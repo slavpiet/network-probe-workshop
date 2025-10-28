@@ -1,22 +1,24 @@
 ---
-- name: Ensure arkime base directory exists
+- name: "ARKIME TASK 1: Ensure arkime base directory exists"
   file:
     path: "{{ base_directory }}/arkime"
     state: directory
     owner: root
     group: root
     mode: '0755'
+  tags: ['arkime']
 
-- name: Ensure PCAP directory exists
+- name: "ARKIME TASK 2: Ensure PCAP directory exists"
   file:
     path: "{{ arkime_pcap_path }}"
     state: directory
     owner: root
     group: root
-    mode: '0775'
+    mode: '0777'
     recurse: yes
+  tags: ['arkime']
 
-- name: Ensure arkime config and logs directories exist
+- name: "ARKIME TASK 3: Ensure arkime config and logs directories exist"
   file:
     path: "{{ item }}"
     state: directory
@@ -24,52 +26,100 @@
     group: root
     mode: '0755'
   loop:
-    - "{{ base_directory }}/arkime/config"
+    - "{{ arkime_config_dir }}"
     - "{{ base_directory }}/arkime/logs"
+  tags: ['arkime']
 
-- name: Copy TLS certs for Arkime (if present)
+- name: "ARKIME TASK 4: Copy TLS certs for Arkime (if present)"
   copy:
-    src: "{{ item.src }}"
-    dest: "{{ base_directory }}/arkime/config/{{ item.dest }}"
+    src: "{{ cert_directory }}/{{ item.src }}"
+    dest: "{{ arkime_config_dir }}/{{ item.dest }}"
+    remote_src: yes
     mode: '0644'
   with_items:
-    - { src: "{{ cert_directory }}/ca.crt", dest: "ca.crt" }
-    - { src: "{{ cert_directory }}/arkime.crt", dest: "arkime.crt" }
-    - { src: "{{ cert_directory }}/arkime.key", dest: "arkime.key" }
+    - { src: "ca.crt", dest: "ca.crt" }
   when: cert_directory is defined
   ignore_errors: yes
+  tags: ['arkime', 'certs']
 
-- name: Deploy docker-compose for Arkime
+- name: "ARKIME TASK 5: Deploy docker-compose for Arkime"
   template:
     src: "docker-compose.yml.j2"
     dest: "{{ base_directory }}/arkime/docker-compose.yml"
     mode: '0644'
+  tags: ['arkime', 'docker']
 
-- name: Pull Arkime Docker images (compose)
+- name: "ARKIME TASK 6: Deploy Arkime config.ini"
+  template:
+    src: "config.ini.j2"
+    dest: "{{ arkime_config_dir }}/config.ini"
+    mode: '0644'
+  tags: ['arkime', 'config']
+
+- name: "ARKIME TASK 7: Pull Arkime Docker images"
   community.docker.docker_compose_v2:
     project_src: "{{ base_directory }}/arkime"
-    pull: yes
+    pull: always
+  tags: ['arkime', 'docker']
 
-- name: Start Arkime stack (docker-compose)
+- name: "ARKIME TASK DO WERYFIKACJI: Initialize Elasticsearch indices (db.pl)"
+  shell: |
+    docker exec arkime-viewer /opt/arkime/db/db.pl {{ arkime_elasticsearch_url }} init
+  register: arkime_init
+  failed_when: false
+  changed_when: "'It is FREE' in arkime_init.stdout"
+  tags: ['arkime', 'init']
+
+- name: "ARKIME TASK 8: Start Arkime stack"
   community.docker.docker_compose_v2:
     project_src: "{{ base_directory }}/arkime"
     state: present
-    restarted: yes
+  register: arkime_deploy
+  tags: ['arkime', 'deploy']
 
-- name: Wait for Arkime viewer to respond on port {{ arkime_port }}
+- name: "ARKIME TASK 9: Wait for Arkime to start"
+  pause:
+    seconds: 30
+  tags: ['arkime']
+
+- name: "ARKIME TASK 10: Wait for Arkime viewer to respond"
   wait_for:
     host: "127.0.0.1"
     port: "{{ arkime_port }}"
     timeout: 180
     state: started
+  tags: ['arkime', 'verify']
 
-- block:
-    - name: Create Arkime admin user via container (idempotent)
-      shell: |
-        if ! docker exec arkime /arkime/bin/arkime_user.sh -l | grep -q "^admin:"; then
-          docker exec arkime /arkime/bin/arkime_add_user.sh admin "{{ arkime_password }}"
-        fi
-      args:
-        warn: false
-  when: arkime_auto_create_admin | default(true)
-  ignore_errors: false
+- name: "ARKIME TASK 11: Wait for Arkime to fully initialize"
+  pause:
+    seconds: 15
+  tags: ['arkime']
+
+- name: "ARKIME TASK 12: Create admin user"
+  shell: |
+    docker exec arkime-viewer /opt/arkime/bin/arkime_add_user.sh admin "Admin User" "{{ arkime_password }}" --admin
+  register: arkime_user
+  failed_when: false
+  changed_when: "'added' in arkime_user.stdout or 'User admin already exists' not in arkime_user.stderr"
+  tags: ['arkime', 'user']
+
+- name: "ARKIME TASK 13: Display status"
+  debug:
+    msg:
+      - "=========================================="
+      - "ARKIME DEPLOYED SUCCESSFULLY!"
+      - "=========================================="
+      - "Containers:"
+      - "  - arkime-capture (capturing packets)"
+      - "  - arkime-viewer (web interface)"
+      - ""
+      - "Access:"
+      - "  URL: http://localhost:{{ arkime_port }}"
+      - "  Username: admin"
+      - "  Password: {{ arkime_password }}"
+      - ""
+      - "Data:"
+      - "  PCAP: {{ arkime_pcap_path }}"
+      - "  Config: {{ arkime_config_dir }}"
+      - "=========================================="
+  tags: ['arkime']

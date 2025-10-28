@@ -1,0 +1,65 @@
+[default]
+# Elasticsearch connection z autentykacją
+elasticsearch=https://elastic:{{ arkime_password }}@localhost:9200
+rotateIndex=daily
+
+# PCAP storage (używamy /opt/arkime/raw zgodnie z dokumentacją)
+pcapDir=/opt/arkime/raw
+maxFileSizeG=12
+maxFileTimeM=60
+freeSpaceG=5%
+
+# Capture settings - ZMNIEJSZONE BUFORY dla systemów z ograniczoną pamięcią
+interface={{ capture_interface }}
+bpf=
+packetThreads=2
+
+# KRYTYCZNE: Zmniejszone wartości tpacketv3 aby uniknąć błędu mmap
+tpacketv3NumThreads=2
+tpacketv3BlockSize=1048576
+pcapWriteMethod=simple
+pcapWriteSize=262144
+
+# Zmniejszone bufory dla stabilności
+dbBulkSize=500000
+maxESConns=20
+maxESRequests=300
+packetsPerPoll=50000
+
+# User settings
+passwordSecret={{ arkime_password }}
+httpRealm=Arkime
+
+# UI settings
+viewPort={{ arkime_port }}
+webBasePath=/
+
+# Certificate settings (dla Elasticsearch)
+{% if cert_directory is defined %}
+caTrustFile=/opt/arkime/etc/ca.crt
+{% endif %}
+insecure=true
+
+# Hostname fix
+host={{ ansible_hostname | default('sonda-dev') }}.local
+
+# Logging
+logEveryXPackets=100000
+logUnknownProtocols=false
+logESRequests=false
+logFileCreation=true
+
+# Performance
+magicMode=basic
+pcapMonitor=true
+pcapDelete=false
+
+# Packet capture method - użyj libpcap zamiast tpacketv3 dla stabilności
+pcapReadMethod=libpcap
+
+# Plugins
+plugins=
+viewerPlugins=
+
+# Packet retention
+deleteCheckDays={{ arkime_pcap_retention_days }}
