@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  arkime-capture:
+    image: {{ arkime_docker_version }}
+    container_name: arkime-capture
+    restart: unless-stopped
+    network_mode: "host"
+    command: /opt/arkime/bin/docker.sh capture --update-geo
+    environment:
+      - ARKIME__elasticsearch=https://elastic:{{ arkime_elastic_password }}@localhost:9200
+      - ARKIME__interface={{ capture_interface }}
+      - ARKIME__pcapDir=/opt/arkime/raw
+      - ARKIME__passwordSecret={{ arkime_password }}
+      - ARKIME__httpRealm=Arkime
+      - ARKIME__insecure=true
+      - ARKIME__pcapReadMethod=libpcap
+      - ARKIME__tpacketv3BlockSize=1048576
+      - ARKIME__dbBulkSize=500000
+    volumes:
+      - {{ arkime_pcap_path }}:/opt/arkime/raw
+      - {{ arkime_config_dir }}:/opt/arkime/etc
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_NICE
+
+  arkime-viewer:
+    image: {{ arkime_docker_version }}
+    container_name: arkime-viewer
+    restart: unless-stopped
+    network_mode: "host"
+    command: /opt/arkime/bin/docker.sh viewer
+    depends_on:
+      - arkime-capture
+    environment:
+      - ARKIME__elasticsearch=https://elastic:{{ arkime_elastic_password }}@localhost:9200
+      - ARKIME__viewPort={{ arkime_port }}
+      - ARKIME__pcapDir=/opt/arkime/raw
+      - ARKIME__passwordSecret={{ arkime_password }}
+      - ARKIME__httpRealm=Arkime
+      - ARKIME__insecure=true
+    volumes:
+      - {{ arkime_pcap_path }}:/opt/arkime/raw
+      - {{ arkime_config_dir }}:/opt/arkime/etc
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:{{ arkime_port }}/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
