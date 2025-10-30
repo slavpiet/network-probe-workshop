@@ -3,13 +3,13 @@
   hosts: all
   become: yes
   
-  vars:
-    # Zeek variables
-    base_directory: "/opt/network-sensors"
-    logs_directory: "/data2/logs"
-    zeek_log_path: "{{ logs_directory }}/zeek"
-    zeek_version: "8.0.1"
-    capture_interface: "eno4"
+  # vars:
+  #   # Zeek variables
+  #   base_directory: "/opt/network-sensors"
+  #   logs_directory: "/data2/logs"
+  #   zeek_log_path: "{{ logs_directory }}/zeek"
+  #   zeek_version: "8.0.1"
+  #   capture_interface: "eno4"
   
   tasks:
     - name: Display Zeek deployment phase
