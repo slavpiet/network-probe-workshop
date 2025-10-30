@@ -1,6 +1,23 @@
 version: '3.8'
 
 services:
+  arkime-init:
+    image: ghcr.io/arkime/arkime/arkime:v5-latest
+    container_name: arkime-init
+    network_mode: "host"
+    command: >
+      bash -c '
+      if ! /opt/arkime/db/db.pl "https://elastic:ChangeMe123!@localhost:9200" info 2>&1 | grep -q "arkime_sessions"; then
+        echo "Initializing Arkime database..."
+        echo "INIT" | /opt/arkime/db/db.pl "https://elastic:ChangeMe123!@localhost:9200" init
+      else
+        echo "Arkime database already initialized"
+      fi
+      '
+    volumes:
+      - /opt/network-sensors/arkime/config:/opt/arkime/etc:ro
+    restart: "no"
+    
   arkime-capture:
     image: {{ arkime_docker_version }}
     container_name: arkime-capture

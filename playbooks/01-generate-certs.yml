@@ -25,7 +25,9 @@
           - "Generating self-signed certificates for:"
           - "  - Elasticsearch (HTTPS)"
           - "  - Kibana (HTTPS)"
+          - "  - Fleet Server (HTTPS)"
           - "Validity: {{ cert_validity_days }} days"
+          - "Including sensor IP: {{ ansible_host }}"
           - "=========================================="
       tags: ['always']
 
@@ -45,5 +47,10 @@
           - "  - ca.crt (Certificate Authority)"
           - "  - elasticsearch.crt + elasticsearch-key.pem"
           - "  - kibana.crt + kibana-key.pem"
+          - "  - fleet-server.crt + fleet-server-key.pem"
+          - ""
+          - "All certificates include SAN entries for:"
+          - "  - DNS: {{ server_hostname }}, {{ server_hostname }}.{{ server_domain }}, localhost"
+          - "  - IP: 127.0.0.1, {{ ansible_host }}"
           - "=========================================="
       tags: ['always']
