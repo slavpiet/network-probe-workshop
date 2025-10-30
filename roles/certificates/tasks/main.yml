@@ -63,6 +63,7 @@
       - "DNS:{{ server_hostname }}.{{ server_domain }}"
       - "DNS:localhost"
       - "IP:127.0.0.1"
+      - "IP:{{ ansible_host }}"
   tags: ['certs', 'elasticsearch']
 
 - name: "CERT TASK 7: Sign Elasticsearch certificate with CA"
@@ -101,6 +102,7 @@
       - "DNS:{{ server_hostname }}.{{ server_domain }}"
       - "DNS:localhost"
       - "IP:127.0.0.1"
+      - "IP:{{ ansible_host }}"
   tags: ['certs', 'kibana']
 
 - name: "CERT TASK 10: Sign Kibana certificate with CA"
@@ -118,7 +120,47 @@
     msg: "Kibana certificate created at {{ cert_directory }}/kibana.crt"
   tags: ['certs', 'kibana']
 
-- name: "CERT TASK 11: Set proper permissions on private keys"
+- name: "CERT TASK 11: Generate Fleet Server private key"
+  community.crypto.openssl_privatekey:
+    path: "{{ cert_directory }}/fleet-server-key.pem"
+    size: 2048
+    mode: '0600'
+  tags: ['certs', 'fleet']
+
+- name: "CERT TASK 12: Generate Fleet Server CSR"
+  community.crypto.openssl_csr:
+    path: "{{ cert_directory }}/fleet-server.csr"
+    privatekey_path: "{{ cert_directory }}/fleet-server-key.pem"
+    common_name: "{{ server_hostname }}"
+    country_name: "{{ cert_country }}"
+    state_or_province_name: "{{ cert_state }}"
+    locality_name: "{{ cert_locality }}"
+    organization_name: "{{ cert_organization }}"
+    subject_alt_name:
+      - "DNS:{{ server_hostname }}"
+      - "DNS:{{ server_hostname }}.{{ server_domain }}"
+      - "DNS:fleet-server"
+      - "DNS:localhost"
+      - "IP:127.0.0.1"
+      - "IP:{{ ansible_host }}"
+  tags: ['certs', 'fleet']
+
+- name: "CERT TASK 13: Sign Fleet Server certificate with CA"
+  community.crypto.x509_certificate:
+    path: "{{ cert_directory }}/fleet-server.crt"
+    csr_path: "{{ cert_directory }}/fleet-server.csr"
+    ownca_path: "{{ cert_directory }}/ca.crt"
+    ownca_privatekey_path: "{{ cert_directory }}/ca-key.pem"
+    provider: ownca
+    ownca_not_after: "+{{ cert_validity_days }}d"
+  tags: ['certs', 'fleet']
+
+- name: Display Fleet Server certificate info
+  debug:
+    msg: "Fleet Server certificate created at {{ cert_directory }}/fleet-server.crt"
+  tags: ['certs', 'fleet']
+
+- name: "CERT TASK 14: Set proper permissions on private keys"
   file:
     path: "{{ item }}"
     mode: '0600'
@@ -126,9 +168,10 @@
     - "{{ cert_directory }}/ca-key.pem"
     - "{{ cert_directory }}/elasticsearch-key.pem"
     - "{{ cert_directory }}/kibana-key.pem"
+    - "{{ cert_directory }}/fleet-server-key.pem"
   tags: ['certs']
 
-- name: "CERT TASK 12: List all generated certificates"
+- name: "CERT TASK 15: List all generated certificates"
   find:
     paths: "{{ cert_directory }}"
     patterns: "*.crt,*.pem"
@@ -138,4 +181,26 @@
 - name: Display generated certificates
   debug:
     msg: "{{ cert_files.files | map(attribute='path') | list }}"
+  tags: ['certs', 'verify']
+
+- name: "CERT TASK 16: Display certificate SAN entries"
+  debug:
+    msg:
+      - "=========================================="
+      - "Certificates generated successfully:"
+      - "  - CA Certificate"
+      - "  - Elasticsearch (with SAN)"
+      - "  - Kibana (with SAN)"
+      - "  - Fleet Server (with SAN)"
+      - "=========================================="
+      - "SAN entries for all certificates:"
+      - "  - DNS: {{ server_hostname }}"
+      - "  - DNS: {{ server_hostname }}.{{ server_domain }}"
+      - "  - DNS: localhost"
+      - "  - IP: 127.0.0.1"
+      - "  - IP: {{ ansible_host }}"
+      - ""
+      - "Fleet Server additional DNS:"
+      - "  - DNS: fleet-server"
+      - "=========================================="
   tags: ['certs', 'verify']
