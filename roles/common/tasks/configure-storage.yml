@@ -118,7 +118,7 @@
   tags: ['storage']
 
 - name: "STORAGE TASK 13: Extend LVM Physical Volume"
-  command: pvresize /dev/sdc3
+  command: pvresize /dev/{{ disk_data2_partition }}
   when: data2_mounted.rc != 0
   tags: ['storage']
 
