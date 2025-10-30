@@ -3,13 +3,13 @@
   hosts: all
   become: yes
   
-  vars:
-    base_directory: "/opt/network-sensors"
-    logs_directory: "/data2/logs"
-    suricata_log_path: "{{ logs_directory }}/suricata"
-    suricata_version: "8.0.1"
-    capture_interface: "eno4"
-    suricata_home_net: "192.168.0.0/16"
+  # vars:
+  #   base_directory: "/opt/network-sensors"
+  #   logs_directory: "/data2/logs"
+  #   suricata_log_path: "{{ logs_directory }}/suricata"
+  #   suricata_version: "8.0.1"
+  #   capture_interface: "eno4"
+  #   suricata_home_net: "192.168.0.0/16"
   
   tasks:
     - name: Display deployment phase
