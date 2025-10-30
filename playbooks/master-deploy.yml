@@ -28,12 +28,12 @@
 - import_playbook: 01-generate-certs.yml
 - import_playbook: 02-deploy-elasticsearch.yml
 - import_playbook: 03-deploy-kibana.yml
-- import_playbook: 04-deploy-logstash.yml
-- import_playbook: 05-deploy-mongodb.yml
+#- import_playbook: 04-deploy-logstash.yml
+#- import_playbook: 05-deploy-mongodb.yml
 - import_playbook: 06-deploy-suricata.yml
 - import_playbook: 07-deploy-zeek.yml
 - import_playbook: 08-deploy-arkime.yml
-- import_playbook: 09-deploy-rita.yml
+#- import_playbook: 09-deploy-rita.yml
 
 - name: Display final summary
   hosts: all
