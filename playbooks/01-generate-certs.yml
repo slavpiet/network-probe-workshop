@@ -3,17 +3,17 @@
   hosts: all
   become: yes
   
-  vars:
-    # Certificate variables
-    base_directory: "/opt/network-sensors"
-    cert_directory: "{{ base_directory }}/certificates"
-    cert_validity_days: 365
-    cert_country: "US"
-    cert_state: "State"
-    cert_locality: "City"
-    cert_organization: "NetworkSensors"
-    server_hostname: "sensor-node-01"
-    server_domain: "local"
+  # vars:
+  #   # Certificate variables
+  #   base_directory: "/opt/network-sensors"
+  #   cert_directory: "{{ base_directory }}/certificates"
+  #   cert_validity_days: 365
+  #   cert_country: "US"
+  #   cert_state: "State"
+  #   cert_locality: "City"
+  #   cert_organization: "NetworkSensors"
+  #   server_hostname: "sensor-node-01"
+  #   server_domain: "local"
   
   tasks:
     - name: Display certificate generation phase
