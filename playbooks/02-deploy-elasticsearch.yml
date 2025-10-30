@@ -3,16 +3,16 @@
   hosts: all
   become: yes
   
-  vars:
-    # Elasticsearch variables
-    base_directory: "/opt/network-sensors"
-    cert_directory: "{{ base_directory }}/certificates"
-    elasticsearch_version: "9.0.0"
-    elasticsearch_http_port: 9200
-    elasticsearch_transport_port: 9300
-    elasticsearch_heap_size: "4g"
-    elasticsearch_password: "ChangeMe123!"
-    elasticsearch_data_path: "/data1/elasticsearch"
+  # vars:
+  #   # Elasticsearch variables
+  #   base_directory: "/opt/network-sensors"
+  #   cert_directory: "{{ base_directory }}/certificates"
+  #   elasticsearch_version: "9.0.0"
+  #   elasticsearch_http_port: 9200
+  #   elasticsearch_transport_port: 9300
+  #   elasticsearch_heap_size: "4g"
+  #   elasticsearch_password: "ChangeMe123!"
+  #   elasticsearch_data_path: "/data1/elasticsearch"
   
   tasks:
     - name: Display Elasticsearch deployment phase
