@@ -62,13 +62,13 @@
     pull: always
   tags: ['arkime', 'docker']
 
-- name: "ARKIME TASK DO WERYFIKACJI: Initialize Elasticsearch indices (db.pl)"
-  shell: |
-    docker exec arkime-viewer /opt/arkime/db/db.pl {{ arkime_elasticsearch_url }} init
-  register: arkime_init
-  failed_when: false
-  changed_when: "'It is FREE' in arkime_init.stdout"
-  tags: ['arkime', 'init']
+# - name: "ARKIME TASK DO WERYFIKACJI: Initialize Elasticsearch indices (db.pl)"
+#   shell: |
+#     docker exec arkime-viewer /opt/arkime/db/db.pl {{ arkime_elasticsearch_url }} init
+#   register: arkime_init
+#   failed_when: false
+#   changed_when: "'It is FREE' in arkime_init.stdout"
+#   tags: ['arkime', 'init']
 
 - name: "ARKIME TASK 8: Start Arkime stack"
   community.docker.docker_compose_v2:
