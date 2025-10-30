@@ -3,21 +3,21 @@
   hosts: all
   become: yes
   
-  vars:
-    # Storage variables defined HERE so they're always available
-    disk_data1_device: "/dev/sdb"
-    disk_data1_mount: "/data1"
-    disk_data2_lv_name: "data2-lv"
-    disk_data2_mount: "/data2"
-    disk_data2_vg: "ubuntu-vg"
-    disk_data3_device: "/dev/sda"
-    disk_data3_mount: "/data3"
-    filesystem_type: "ext4"
-    base_directory: "/opt/network-sensors"
-    elasticsearch_data_path: "/data1/elasticsearch"
-    mongodb_data_path: "/data1/mongodb"
-    logs_directory: "/data2/logs"
-    arkime_pcap_path: "/data3/pcap"
+  # vars:
+  #   # Storage variables defined HERE so they're always available
+  #   disk_data1_device: "/dev/sdb"
+  #   disk_data1_mount: "/data1"
+  #   disk_data2_lv_name: "data2-lv"
+  #   disk_data2_mount: "/data2"
+  #   disk_data2_vg: "ubuntu-vg"
+  #   disk_data3_device: "/dev/sda"
+  #   disk_data3_mount: "/data3"
+  #   filesystem_type: "ext4"
+  #   base_directory: "/opt/network-sensors"
+  #   elasticsearch_data_path: "/data1/elasticsearch"
+  #   mongodb_data_path: "/data1/mongodb"
+  #   logs_directory: "/data2/logs"
+  #   arkime_pcap_path: "/data3/pcap"
   
   tasks:
     - name: Display preparation phase
