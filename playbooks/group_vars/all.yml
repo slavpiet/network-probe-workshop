@@ -13,6 +13,7 @@ disk_data1_mount: "/data1"
 disk_data2_lv_name: "data2-lv"
 disk_data2_mount: "/data2"
 disk_data2_vg: "ubuntu-vg"
+disk_data2_partition: "sdc3"
 
 disk_data3_device: "/dev/sda"
 disk_data3_mount: "/data3"
